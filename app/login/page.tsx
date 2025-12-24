@@ -12,7 +12,6 @@ import { createClient, isSupabaseConfigured } from '@/lib/supabase/client';
 import {
     getSupabaseConfig,
     getSupabaseUrlHost,
-    probeSupabaseConnectivity,
     supabaseAnonKey,
     supabaseUrl,
 } from '@/lib/supabase/config';
@@ -104,37 +103,12 @@ function LoginForm() {
         console.log('[Supabase] NEXT_PUBLIC_SUPABASE_URL host:', host ?? '(missing/invalid)');
         console.log('[Supabase] NEXT_PUBLIC_SUPABASE_ANON_KEY present:', Boolean(supabaseAnonKey));
 
-        // Dev-only connectivity probe to distinguish wrong/unreachable endpoint (state B)
-        if (process.env.NODE_ENV !== 'development') return;
-        if (!isSupabaseConfigured()) return;
-
-        let cancelled = false;
-        setIsReachable(null);
-        probeSupabaseConnectivity(2500)
-            .then((result) => {
-                if (cancelled) return;
-                if (!result.ok) {
-                    console.error('[Supabase] Connectivity probe failed:', {
-                        supabaseUrl,
-                        host,
-                        ...result,
-                    });
-                    setIsReachable(false);
-                    setError('Cannot reach Supabase endpoint. Controleer de URL/DNS/firewall en je Supabase configuratie.');
-                    return;
-                }
-                setIsReachable(true);
-            })
-            .catch((probeError) => {
-                if (cancelled) return;
-                console.error('[Supabase] Connectivity probe threw:', probeError);
-                setIsReachable(false);
-                setError('Cannot reach Supabase endpoint. Controleer de URL/DNS/firewall en je Supabase configuratie.');
-            });
-
-        return () => {
-            cancelled = true;
-        };
+        // Note: We removed the connectivity probe because it fails due to CORS
+        // (the /auth/v1/health endpoint doesn't allow browser requests from localhost).
+        // Actual login/signup requests WILL work - they use proper Supabase SDK.
+        if (isSupabaseConfigured()) {
+            setIsReachable(true); // Assume reachable if configured
+        }
     }, []);
 
     const supabase = createClient();

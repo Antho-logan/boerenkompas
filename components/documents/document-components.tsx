@@ -17,6 +17,14 @@ import { SlideOver } from "@/components/calendar/calendar-overlays"
 const RECENT_WINDOW_MS = 7 * 24 * 60 * 60 * 1000
 const RECENT_CUTOFF_MS = Date.now() - RECENT_WINDOW_MS
 
+function openDocumentDownload(docId: string) {
+    const url = `/api/documents/${docId}/download`
+    const newWindow = window.open(url, "_blank", "noopener,noreferrer")
+    if (!newWindow) {
+        window.location.assign(url)
+    }
+}
+
 export function StatusBadge({ status }: { status: DocumentItem['status'] }) {
     if (status === 'ok') return <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200">In orde</Badge>
     if (status === 'needs_review') return <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200 animate-pulse">Te controleren</Badge>
@@ -144,7 +152,16 @@ export function DocumentsList({
                             <StatusBadge status={doc.status} />
                         </div>
                         <div className="col-span-6 md:col-span-2 flex justify-end items-center gap-1 pr-1">
-                            <Button size="icon" variant="ghost" className="h-8 w-8 text-slate-400 hover:text-slate-600">
+                            <Button
+                                size="icon"
+                                variant="ghost"
+                                className="h-8 w-8 text-slate-400 hover:text-slate-600"
+                                onClick={(event) => {
+                                    event.stopPropagation()
+                                    openDocumentDownload(doc.id)
+                                }}
+                                aria-label="Download document"
+                            >
                                 <Download size={16} />
                             </Button>
                             <Button size="icon" variant="ghost" className="h-8 w-8 text-slate-400 hover:text-slate-600">
@@ -183,7 +200,10 @@ export function DocumentDetailSheet({ doc, isOpen, onClose, onUpdate }: { doc: D
                     </div>
 
                     <div className="space-y-3 pt-4">
-                        <Button className="w-full bg-slate-900 text-white hover:bg-slate-800" onClick={() => alert('Start download...')}>
+                        <Button
+                            className="w-full bg-slate-900 text-white hover:bg-slate-800"
+                            onClick={() => openDocumentDownload(doc.id)}
+                        >
                             <Download className="mr-2 size-4" /> Download
                         </Button>
                         {doc.status !== 'ok' && (

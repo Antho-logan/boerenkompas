@@ -8,6 +8,7 @@
 import { revalidatePath } from 'next/cache';
 import { createServerSupabaseClient, requireUser } from '@/lib/supabase/server';
 import { requireActiveTenant } from '@/lib/supabase/tenant';
+import { assertFeature } from '@/lib/auth/plan';
 import { logAuditEvent } from './audit';
 import type { TenantMember, TenantRole } from '@/lib/supabase/types';
 
@@ -48,6 +49,11 @@ export async function addTenantMember(
         throw new Error('Only owners can add members');
     }
 
+    // GATE: Advisor role requires multi_advisor_seats feature (Teams plan+)
+    if (role === 'advisor') {
+        await assertFeature(tenant.id, 'multi_advisor_seats');
+    }
+
     const { data, error } = await supabase
         .from('tenant_members')
         .insert({
@@ -86,6 +92,11 @@ export async function updateMemberRole(
     // Check if user is owner
     if (tenant.role !== 'owner') {
         throw new Error('Only owners can update member roles');
+    }
+
+    // GATE: Advisor role requires multi_advisor_seats feature (Teams plan+)
+    if (role === 'advisor') {
+        await assertFeature(tenant.id, 'multi_advisor_seats');
     }
 
     const { data, error } = await supabase

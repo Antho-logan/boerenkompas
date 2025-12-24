@@ -1,12 +1,17 @@
 import type { NextConfig } from "next";
 import { existsSync } from "node:fs";
-import { join } from "node:path";
+import { join, dirname, resolve } from "node:path";
 
+/**
+ * Log safe environment diagnostics at dev startup.
+ * Never logs secrets - only hosts, lengths, and presence indicators.
+ */
 function logEnvStartupInfo() {
   if (process.env.NODE_ENV !== "development") return;
 
   const cwd = process.cwd();
   const envLocalPath = join(cwd, ".env.local");
+  const packageJsonPath = join(cwd, "package.json");
   
   // Try to peek at process.env (loaded by Next.js)
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -19,23 +24,34 @@ function logEnvStartupInfo() {
     host = "(invalid url)";
   }
 
-  console.log("\n--- BoerenKompas Dev Startup ---");
-  console.log("Root (cwd):", cwd);
-  console.log(".env.local path:", envLocalPath);
-  console.log(".env.local exists:", existsSync(envLocalPath) ? "YES" : "NO");
-  console.log("Loaded Supabase Host:", host);
-  console.log("Loaded Anon Key:", anonKey ? `Present (len=${anonKey.length})` : "MISSING");
-  console.log("--------------------------------\n");
+  // Safe key info (no secrets)
+  let keyInfo = "MISSING";
+  if (anonKey) {
+    const dots = (anonKey.match(/\./g) || []).length;
+    keyInfo = `Present (len=${anonKey.length}, dots=${dots})`;
+  }
+
+  console.log("\n┌─────────────────────────────────────────────────────────────┐");
+  console.log("│              BoerenKompas Dev Startup                       │");
+  console.log("├─────────────────────────────────────────────────────────────┤");
+  console.log(`│ CWD:              ${cwd.slice(-40).padEnd(40)} │`);
+  console.log(`│ package.json:     ${(existsSync(packageJsonPath) ? "✓ EXISTS" : "✗ MISSING").padEnd(40)} │`);
+  console.log(`│ .env.local:       ${(existsSync(envLocalPath) ? "✓ EXISTS" : "✗ MISSING").padEnd(40)} │`);
+  console.log("├─────────────────────────────────────────────────────────────┤");
+  console.log(`│ Supabase Host:    ${host.slice(0, 40).padEnd(40)} │`);
+  console.log(`│ Anon Key:         ${keyInfo.slice(0, 40).padEnd(40)} │`);
+  console.log("└─────────────────────────────────────────────────────────────┘\n");
 }
 
 logEnvStartupInfo();
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
-  // Fix for potential workspace/lockfile issues
-  experimental: {
-    // Force Next.js to respect the current directory as root for lockfile resolution if possible
-    // (There isn't a direct 'lockfileRoot' config, but limiting search can help)
+  
+  // Fix Turbopack workspace root inference issue
+  // This prevents Next.js from using a stray package-lock.json in a parent directory
+  turbopack: {
+    root: resolve(__dirname),
   },
 };
 

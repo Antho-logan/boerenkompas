@@ -1,24 +1,24 @@
 "use client"
 
-import { PageHeader } from "@/components/ai/shared-components"
 import { PreviewBadge } from "@/components/ui/preview-badge"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { ArrowRight, FileText, Star } from "lucide-react"
+import { Star } from "lucide-react"
+import DashboardPage from "@/components/app/DashboardPage"
 
 export default function UpdatesPage() {
     return (
-        <div className="space-y-6 lg:space-y-8 animate-fade-in-up">
-            <PageHeader
-                title={<div className="flex items-center gap-3">Updates <PreviewBadge /></div>}
-                subtitle="Binnenkort: template-updates en checklistwijzigingen. In MVP tonen we alleen release notes."
-                actions={
-                    <Button variant="outline" disabled className="bg-slate-50 text-slate-400 border-slate-200 cursor-not-allowed">
-                        Automatisch bijwerken (Binnenkort)
-                    </Button>
-                }
-            />
+        <DashboardPage
+            title={<span className="flex items-center gap-3">Updates <PreviewBadge /></span>}
+            description="Binnenkort: template-updates en checklistwijzigingen. In MVP tonen we alleen release notes."
+            actions={
+                <Button variant="outline" disabled className="bg-slate-50 text-slate-400 border-slate-200 cursor-not-allowed">
+                    Automatisch bijwerken (Binnenkort)
+                </Button>
+            }
+            className="animate-fade-in-up"
+        >
 
             <div className="max-w-3xl">
                 <div className="space-y-6">
@@ -54,6 +54,6 @@ export default function UpdatesPage() {
                     </Card>
                 </div>
             </div>
-        </div>
+        </DashboardPage>
     )
 }

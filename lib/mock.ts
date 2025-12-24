@@ -7,7 +7,7 @@ import { addDays, subDays, format } from 'date-fns';
 // 1. Tenants & Users
 export const MOCK_TENANTS: Tenant[] = [
     { id: 't-1', name: 'Maatschap Jansen', plan: 'pro', logoUrl: '/placeholder-farm-1.jpg', kvk: '12345678' },
-    { id: 't-2', name: 'De Vries Agro', plan: 'plus', logoUrl: '/placeholder-farm-2.jpg', kvk: '87654321' },
+    { id: 't-2', name: 'De Vries Agro', plan: 'teams', logoUrl: '/placeholder-farm-2.jpg', kvk: '87654321' },
 ];
 
 export const MOCK_USER: User = {

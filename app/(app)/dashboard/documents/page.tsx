@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react"
 import { DocumentsStats, DocumentsFilterBar, DocumentsList, DocumentDetailSheet, UploadDialog } from "@/components/documents/document-components"
 import { useTenant } from "@/components/app/TenantProvider"
+import DashboardPage from "@/components/app/DashboardPage"
 import type { Document } from "@/lib/supabase/types"
 
 // Map Supabase document to UI DocumentItem format
@@ -192,27 +193,24 @@ export default function DocumentsPage() {
 
     if (loading) {
         return (
-            <div className="space-y-6 animate-fade-in-up">
-                <div className="flex flex-col gap-1">
-                    <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Mijn Documenten</h1>
-                    <p className="text-slate-500 text-sm">Beheer je compliance en administratie op één plek.</p>
-                </div>
+            <DashboardPage
+                title="Mijn documenten"
+                description="Beheer je compliance en administratie op één plek."
+                className="animate-fade-in-up"
+            >
                 <div className="h-64 flex items-center justify-center text-slate-400">
                     Documenten laden...
                 </div>
-            </div>
+            </DashboardPage>
         );
     }
 
     return (
-        <div className="space-y-6 animate-fade-in-up">
-
-            {/* Header */}
-            <div className="flex flex-col gap-1 animate-fade-in-up">
-                <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Mijn Documenten</h1>
-                <p className="text-slate-500 text-sm">Beheer je compliance en administratie op één plek.</p>
-            </div>
-
+        <DashboardPage
+            title="Mijn documenten"
+            description="Beheer je compliance en administratie op één plek."
+            className="animate-fade-in-up"
+        >
             <DocumentsStats docs={docs as any} />
 
             {/* Tabs & Toolbar */}
@@ -241,7 +239,7 @@ export default function DocumentsPage() {
 
             <DocumentDetailSheet doc={selectedDoc as any} isOpen={isDetailOpen} onClose={() => setIsDetailOpen(false)} onUpdate={handleUpdate as any} />
             <UploadDialogWithFile isOpen={isUploadOpen} onClose={() => setIsUploadOpen(false)} onUpload={handleUpload} />
-        </div>
+        </DashboardPage>
     )
 }
 

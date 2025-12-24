@@ -3,10 +3,12 @@
  * 
  * SECURITY:
  * - PATCH has strict allowlist for updatable fields (mass-assignment protection)
+ * - All operations are tenant-scoped via server actions
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 import { updateTask, deleteTask } from '@/lib/supabase/actions/tasks';
+import { handleApiError, requireAuth } from '@/lib/supabase/guards';
 import type { TaskUpdate } from '@/lib/supabase/types';
 
 // Allowlist of fields that can be updated via PATCH
@@ -33,6 +35,9 @@ export async function PATCH(
     { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const auth = await requireAuth({ requireRole: 'admin' });
+        if (auth instanceof NextResponse) return auth;
+
         const { id } = await params;
         const body = await request.json();
 
@@ -42,8 +47,8 @@ export async function PATCH(
             return NextResponse.json(
                 {
                     error: 'Forbidden fields in request',
+                    code: 'FORBIDDEN_FIELDS',
                     fields: forbiddenFound,
-                    message: `Cannot update: ${forbiddenFound.join(', ')}`
                 },
                 { status: 400 }
             );
@@ -62,7 +67,8 @@ export async function PATCH(
             return NextResponse.json(
                 {
                     error: 'No valid fields to update',
-                    allowed: ALLOWED_UPDATE_FIELDS
+                    code: 'NO_VALID_FIELDS',
+                    allowed: ALLOWED_UPDATE_FIELDS,
                 },
                 { status: 400 }
             );
@@ -76,11 +82,7 @@ export async function PATCH(
         const task = await updateTask(id, sanitized);
         return NextResponse.json({ task });
     } catch (error) {
-        console.error('Error updating task:', error);
-        return NextResponse.json(
-            { error: 'Failed to update task' },
-            { status: 500 }
-        );
+        return handleApiError(error);
     }
 }
 
@@ -89,14 +91,13 @@ export async function DELETE(
     { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const auth = await requireAuth({ requireRole: 'admin' });
+        if (auth instanceof NextResponse) return auth;
+
         const { id } = await params;
         await deleteTask(id);
         return NextResponse.json({ success: true });
     } catch (error) {
-        console.error('Error deleting task:', error);
-        return NextResponse.json(
-            { error: 'Failed to delete task' },
-            { status: 500 }
-        );
+        return handleApiError(error);
     }
 }

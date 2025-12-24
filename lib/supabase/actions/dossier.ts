@@ -121,7 +121,7 @@ export async function linkDocumentToRequirement(
 }
 
 /**
- * Remove a document link
+ * Remove a document link by ID
  */
 export async function removeDocumentLink(id: string): Promise<void> {
     const supabase = await createServerSupabaseClient();
@@ -139,6 +139,53 @@ export async function removeDocumentLink(id: string): Promise<void> {
     }
 
     revalidatePath('/dashboard/ai/compliance-check');
+}
+
+/**
+ * Remove a document link by requirement ID (unlink)
+ * Returns the deleted link info for UI state management
+ */
+export async function unlinkDocumentFromRequirement(
+    requirementId: string
+): Promise<{ requirementId: string; deleted: boolean }> {
+    const supabase = await createServerSupabaseClient();
+    const tenant = await requireActiveTenant();
+
+    // First, get the link to ensure it exists
+    const { data: existingLink, error: fetchError } = await supabase
+        .from('document_links')
+        .select('id')
+        .eq('tenant_id', tenant.id)
+        .eq('requirement_id', requirementId)
+        .single();
+
+    if (fetchError || !existingLink) {
+        // No link exists - that's fine, return success
+        return { requirementId, deleted: false };
+    }
+
+    // Delete the link
+    const { error } = await supabase
+        .from('document_links')
+        .delete()
+        .eq('id', existingLink.id)
+        .eq('tenant_id', tenant.id);
+
+    if (error) {
+        console.error('Error unlinking document:', error);
+        throw new Error('Failed to unlink document');
+    }
+
+    // Log audit event
+    await logAuditEvent({
+        action: 'document_link.deleted',
+        entity_type: 'document_link',
+        entity_id: existingLink.id,
+        meta: { requirement_id: requirementId },
+    });
+
+    revalidatePath('/dashboard/ai/compliance-check');
+    return { requirementId, deleted: true };
 }
 
 /**
@@ -288,6 +335,9 @@ export async function getDossierCheckSummary(
  * - Marks tasks as 'done' when satisfied (doesn't delete)
  * - Only creates/reopens when needed
  * 
+ * SECURITY:
+ * - Requires Pro plan (missing_items_generator feature)
+ * 
  * Returns summary of counts after processing
  */
 export async function generateMissingItems(
@@ -296,6 +346,11 @@ export async function generateMissingItems(
     const supabase = await createServerSupabaseClient();
     const user = await requireUser();
     const tenant = await requireActiveTenant();
+
+    // GATE: Missing Items Generator requires Pro plan
+    // This is also checked in the API route, but we enforce here for direct action calls
+    const { assertFeature } = await import('@/lib/auth/plan');
+    await assertFeature(tenant.id, 'missing_items_generator');
 
     // Get requirements with status (includes recency_days logic)
     const requirements = await getRequirementsWithStatus(templateId);

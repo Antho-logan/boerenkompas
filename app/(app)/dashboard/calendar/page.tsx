@@ -9,6 +9,7 @@ import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { useTenant } from "@/components/app/TenantProvider"
 import type { TaskWithRequirement } from "@/lib/supabase/types"
+import DashboardPage from "@/components/app/DashboardPage"
 
 // Convert task to calendar item format
 function taskToCalendarItem(task: TaskWithRequirement): CalendarItem {
@@ -106,7 +107,11 @@ export default function CalendarPage() {
 
     if (loading) {
         return (
-            <div className="space-y-6 animate-fade-in-up">
+            <DashboardPage
+                title="Kalender"
+                description="Plan taken, deadlines en compliance herinneringen op één plek."
+                className="animate-fade-in-up"
+            >
                 <CalendarControlBar
                     view={view}
                     setView={setView}
@@ -118,14 +123,16 @@ export default function CalendarPage() {
                     <Loader2 className="size-8 animate-spin mr-2" />
                     Kalender laden...
                 </div>
-            </div>
+            </DashboardPage>
         );
     }
 
     return (
-        <div className="space-y-6 animate-fade-in-up">
-
-            {/* Controls */}
+        <DashboardPage
+            title="Kalender"
+            description="Plan taken, deadlines en compliance herinneringen op één plek."
+            className="animate-fade-in-up"
+        >
             <CalendarControlBar
                 view={view}
                 setView={setView}
@@ -195,6 +202,6 @@ export default function CalendarPage() {
                     />
                 )}
             </SlideOver>
-        </div>
+        </DashboardPage>
     )
 }

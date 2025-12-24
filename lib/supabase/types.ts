@@ -30,6 +30,12 @@ export type DocumentLinkStatus = 'satisfied' | 'not_sure' | 'rejected';
 export interface Tenant {
     id: string;
     name: string;
+    plan: 'starter' | 'pro' | 'pro_advisor' | 'teams' | 'enterprise';
+    stripe_customer_id: string | null;
+    stripe_subscription_id: string | null;
+    plan_status: 'inactive' | 'active' | 'trialing' | 'past_due' | 'canceled';
+    current_period_end: string | null;
+    cancel_at_period_end: boolean;
     created_at: string;
     created_by: string | null;
 }
@@ -37,6 +43,12 @@ export interface Tenant {
 export interface TenantInsert {
     id?: string;
     name: string;
+    plan?: 'starter' | 'pro' | 'pro_advisor' | 'teams' | 'enterprise';
+    stripe_customer_id?: string | null;
+    stripe_subscription_id?: string | null;
+    plan_status?: 'inactive' | 'active' | 'trialing' | 'past_due' | 'canceled';
+    current_period_end?: string | null;
+    cancel_at_period_end?: boolean;
     created_by?: string | null;
 }
 
@@ -202,6 +214,7 @@ export interface Task {
     created_at: string;
     created_by: string | null;
     completed_at: string | null;
+    updated_at: string;
 }
 
 export interface TaskInsert {

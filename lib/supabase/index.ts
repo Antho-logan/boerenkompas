@@ -14,4 +14,14 @@ export {
     createTenantWithOwner,
     getCurrentUserInfo,
 } from './tenant';
+export {
+    requireAuth,
+    getAuth,
+    handleApiError,
+    verifyEntityOwnership,
+    apiError,
+    errors,
+    isErrorResponse,
+} from './guards';
+export type { AuthContext, GuardOptions, ApiError } from './guards';
 export * from './types';

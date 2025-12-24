@@ -55,7 +55,7 @@ export const LANDING_COPY = {
         },
         plans: [
             {
-                name: "Start",
+                name: "Starter",
                 intro: "Basis documentbeheer voor de zelfstandige ondernemer.",
                 price_monthly: 99,
                 bullets: [
@@ -71,31 +71,31 @@ export const LANDING_COPY = {
             {
                 name: "Pro",
                 label: "Meest gekozen",
-                intro: "Voor bedrijven die samenwerken met adviseurs.",
+                intro: "Voor bedrijven die grip willen op hun compliance.",
                 price_monthly: 249,
                 bullets: [
-                    "Alles van Start",
+                    "Alles van Starter",
                     "Dossier Packs (Mest & Stikstof)",
                     "Dossier Check (Missing items)",
                     "10 exports per maand",
-                    "Toegang voor 3 adviseurs"
+                    "E-mail support"
                 ],
                 micro: "Meest gekozen: minder administratieve rompslomp.",
-                cta: "Boek een demo"
+                cta: "Kies Pro"
             },
             {
-                name: "Plus",
-                intro: "Volledige ontzorging voor grotere structuren.",
-                price_monthly: 499,
+                name: "Pro+Adviseur",
+                intro: "Voor bedrijven die intensief samenwerken met adviseurs.",
+                price_monthly: 449,
                 bullets: [
                     "Alles van Pro",
+                    "Toegang voor 3 adviseurs",
+                    "Gedeelde dossiers",
                     "Onbeperkte exports",
-                    "Prioriteit support + onboarding",
-                    "Audit Log",
-                    "Meer opslagruimte"
+                    "Prioriteit support"
                 ],
                 micro: "Voor maximale zekerheid.",
-                cta: "Vraag offerte aan"
+                cta: "Kies Team"
             }
         ],
         addons: [

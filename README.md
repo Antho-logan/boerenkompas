@@ -30,6 +30,10 @@ If you change `.env.local`, restart `npm run dev` to pick up the changes.
 - `NEXT_PUBLIC_SUPABASE_URL`
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 
+## Database Migrations
+
+Migrations `004_add_plan.sql` and `005_fix_plan_enum.sql` were previously applied manually in production. The repository migrations are now the source of truth for schema changes.
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:

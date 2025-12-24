@@ -1,70 +1,80 @@
 "use client"
 
-import * as React from "react"
+/**
+ * PremiumBarsChart
+ *
+ * A polished bar chart with animated bars, consistent styling,
+ * and accessible interactions.
+ */
 
+import * as React from "react"
 import { cn } from "@/lib/utils"
+import {
+  CHART_CONFIG,
+  CHART_TONES,
+  type ChartTone,
+  usePrefersReducedMotion,
+  clamp,
+  formatNumber,
+  getLabelInterval,
+  ChartEmptyState,
+  ChartSkeleton,
+  ChartTooltip,
+} from "./chart-primitives"
 
 export type BarDatum = {
   label: string
   value: number
 }
 
-type Tone = "emerald" | "amber" | "slate"
-
 type Props = {
   data: BarDatum[]
   height?: number
   valueLabel?: string
+  unit?: string
   formatValue?: (n: number) => string
   ariaLabel?: string
   className?: string
-  tone?: Tone
+  tone?: ChartTone
+  /** Show loading skeleton */
+  loading?: boolean
 }
-
-function clamp(n: number, min: number, max: number) {
-  return Math.max(min, Math.min(max, n))
-}
-
-function formatDefault(n: number) {
-  return new Intl.NumberFormat("nl-NL").format(Math.round(n))
-}
-
-function usePrefersReducedMotion() {
-  const [reduced, setReduced] = React.useState(false)
-  React.useEffect(() => {
-    const mq = window.matchMedia("(prefers-reduced-motion: reduce)")
-    const onChange = () => setReduced(!!mq.matches)
-    onChange()
-    mq.addEventListener?.("change", onChange)
-    return () => mq.removeEventListener?.("change", onChange)
-  }, [])
-  return reduced
-}
-
-const TONE = {
-  emerald:
-    "bg-gradient-to-t from-emerald-700 to-emerald-500 shadow-emerald-900/10 ring-emerald-500/20",
-  amber:
-    "bg-gradient-to-t from-amber-700 to-amber-500 shadow-amber-900/10 ring-amber-500/20",
-  slate:
-    "bg-gradient-to-t from-slate-900 to-slate-700 shadow-slate-900/10 ring-slate-500/20",
-} satisfies Record<Tone, string>
 
 export function PremiumBarsChart({
   data,
-  height = 160,
+  height = CHART_CONFIG.height.sm,
   valueLabel = "",
-  formatValue = formatDefault,
+  unit = "",
+  formatValue = (n) => formatNumber(Math.round(n)),
   ariaLabel = "Staafgrafiek",
   className,
   tone = "emerald",
+  loading = false,
 }: Props) {
   const reducedMotion = usePrefersReducedMotion()
-  const max = Math.max(1, ...data.map((d) => d.value)) * 1.05
   const [hoverIdx, setHoverIdx] = React.useState<number | null>(null)
 
-  const labelEvery = data.length <= 8 ? 1 : data.length <= 12 ? 2 : 3
+  // Handle empty/loading states
+  if (loading) {
+    return (
+      <div className={cn("relative w-full", className)}>
+        <ChartSkeleton height={height + 32} />
+      </div>
+    )
+  }
+
+  if (!data.length) {
+    return (
+      <div className={cn("relative w-full", className)}>
+        <ChartEmptyState height={height} />
+      </div>
+    )
+  }
+
+  const max = Math.max(1, ...data.map((d) => d.value)) * 1.05
+  const labelEvery = getLabelInterval(data.length)
   const tooltipLeft = hoverIdx == null ? 0 : ((hoverIdx + 0.5) / data.length) * 100
+  const toneConfig = CHART_TONES[tone]
 
   return (
     <div
@@ -72,9 +82,11 @@ export function PremiumBarsChart({
       role="img"
       aria-label={ariaLabel}
     >
-      <div className="absolute inset-x-0 bottom-0 h-px bg-slate-200/80" />
+      {/* Bottom axis line */}
+      <div className="absolute inset-x-0 bottom-0 h-px bg-slate-200 dark:bg-slate-700" />
 
-      <div className="flex items-end gap-2" style={{ height }} role="list">
+      {/* Bars container */}
+      <div className="flex items-end gap-1.5 sm:gap-2" style={{ height }} role="list">
         {data.map((d, i) => {
           const heightPct = clamp((d.value / max) * 100, 2, 100)
           const active = hoverIdx === i
@@ -82,25 +94,34 @@ export function PremiumBarsChart({
           return (
             <div
               key={`${d.label}-${i}`}
-              className="relative flex-1 h-full group outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/30 rounded-md"
+              className={cn(
+                "relative flex-1 h-full group outline-none rounded-md",
+                "focus-visible:ring-2 focus-visible:ring-offset-2",
+                tone === "emerald" && "focus-visible:ring-emerald-500/30",
+                tone === "blue" && "focus-visible:ring-blue-500/30",
+                tone === "amber" && "focus-visible:ring-amber-500/30",
+                tone === "violet" && "focus-visible:ring-violet-500/30",
+                tone === "slate" && "focus-visible:ring-slate-500/30"
+              )}
               onMouseEnter={() => setHoverIdx(i)}
               onMouseLeave={() => setHoverIdx(null)}
               onFocus={() => setHoverIdx(i)}
               onBlur={() => setHoverIdx(null)}
               tabIndex={0}
               role="listitem"
-              aria-label={`${d.label}: ${formatValue(d.value)} ${valueLabel}`}
+              aria-label={`${d.label}: ${formatValue(d.value)}${unit ? ` ${unit}` : ""}`}
             >
               <div
                 className={cn(
-                  "w-full rounded-lg ring-1 transition-all duration-200 ease-out origin-bottom",
+                  "w-full rounded-lg ring-1 ring-white/10 shadow-sm",
+                  "transition-all duration-200 ease-out origin-bottom",
                   reducedMotion ? "" : "animate-bar-grow",
-                  TONE[tone],
-                  active ? "opacity-100" : "opacity-80 group-hover:opacity-100"
+                  toneConfig.bgGradient,
+                  active ? "opacity-100 scale-[1.02]" : "opacity-75 group-hover:opacity-100"
                 )}
                 style={{
                   height: `${heightPct}%`,
-                  animationDelay: reducedMotion ? "0ms" : `${i * 60}ms`,
+                  animationDelay: reducedMotion ? "0ms" : `${i * 50}ms`,
                 }}
               />
             </div>
@@ -109,31 +130,40 @@ export function PremiumBarsChart({
       </div>
 
       {/* Tooltip */}
-      {hoverIdx != null && data[hoverIdx] ? (
+      {hoverIdx != null && data[hoverIdx] && (
         <div
           className="pointer-events-none absolute top-0 z-10"
-          style={{ left: `${tooltipLeft}%`, transform: "translate(-50%, -120%)" }}
+          style={{ left: `${tooltipLeft}%`, transform: "translate(-50%, -130%)" }}
         >
-          <div className="rounded-xl border border-slate-200 bg-white/95 shadow-sm backdrop-blur px-3 py-2 text-xs min-w-[180px]">
-            <div className="flex items-center justify-between gap-3">
-              <div className="font-medium text-slate-900">{data[hoverIdx]!.label}</div>
-              <div className="text-slate-500">{valueLabel}</div>
-            </div>
-            <div className="mt-1 flex items-end justify-between">
-              <div className="text-slate-600">Waarde</div>
-              <div className="font-semibold text-slate-900">{formatValue(data[hoverIdx]!.value)}</div>
-            </div>
-          </div>
+          <ChartTooltip
+            label={data[hoverIdx]!.label}
+            items={[
+              {
+                name: valueLabel || "Waarde",
+                value: `${formatValue(data[hoverIdx]!.value)}${unit ? ` ${unit}` : ""}`,
+                colorClass: toneConfig.bg,
+              },
+            ]}
+          />
         </div>
-      ) : null}
+      )}
 
-      {/* X axis labels */}
-      <div className="mt-3 flex justify-between text-[10px] text-slate-400 font-medium px-1">
+      {/* X-axis labels */}
+      <div className="mt-3 flex justify-between text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 font-medium px-0.5">
         {data.map((d, i) => {
           if (i % labelEvery !== 0 && i !== data.length - 1) return null
-          return <span key={`${d.label}-label-${i}`}>{d.label}</span>
+          return (
+            <span
+              key={`${d.label}-label-${i}`}
+              className="truncate max-w-[60px] sm:max-w-none"
+            >
+              {d.label}
+            </span>
+          )
         })}
       </div>
     </div>
   )
 }
+
+export default PremiumBarsChart

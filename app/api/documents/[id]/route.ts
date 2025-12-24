@@ -8,6 +8,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { updateDocument, deleteDocument, getDocument } from '@/lib/supabase/actions/documents';
+import { requireAuth } from '@/lib/supabase/guards';
 import type { DocumentUpdate } from '@/lib/supabase/types';
 
 // Allowlist of fields that can be updated via PATCH
@@ -115,6 +116,9 @@ export async function DELETE(
     { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const auth = await requireAuth({ requireRole: 'admin' });
+        if (auth instanceof NextResponse) return auth;
+
         const { id } = await params;
 
         // Note: deleteDocument already requires admin role via RLS

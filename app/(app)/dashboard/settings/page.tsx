@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Mail } from "lucide-react"
+import DashboardPage from "@/components/app/DashboardPage"
 
 export default function SettingsPage() {
     const { tenant } = useTenant();
@@ -19,12 +20,11 @@ export default function SettingsPage() {
     if (!tenant) return null;
 
     return (
-        <div className="space-y-8 max-w-4xl animate-fade-in-up">
-            <div>
-                <h1 className="text-2xl font-bold text-slate-900">Instellingen</h1>
-                <p className="text-slate-500">Beheer je bedrijfsprofiel en toegang.</p>
-            </div>
-
+        <DashboardPage
+            title="Instellingen"
+            description="Beheer je bedrijfsprofiel en toegang."
+            className="animate-fade-in-up"
+        >
             {/* Company Profile */}
             <Card>
                 <CardHeader>
@@ -78,6 +78,6 @@ export default function SettingsPage() {
                     </div>
                 </CardContent>
             </Card>
-        </div>
+        </DashboardPage>
     )
 }

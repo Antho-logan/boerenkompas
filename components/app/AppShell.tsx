@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import {
@@ -21,9 +21,11 @@ import {
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { TenantSwitch } from "./TenantSwitch"
+import { PlanPreviewSwitcher } from "./PlanPreviewSwitcher"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent } from "@/components/ui/sheet"
 import { useTenant } from "./TenantProvider"
+import PageTransition from "@/components/app/PageTransition"
 
 type NavLinkItem = { kind: "link"; label: string; href: string; icon: LucideIcon; badge?: string }
 type NavHeaderItem = { kind: "header"; label: string }
@@ -32,7 +34,9 @@ type NavItem = NavLinkItem | NavHeaderItem
 // Sidebar Nav Items
 const NAV_ITEMS: NavItem[] = [
     { kind: "link", label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-    { kind: "link", label: 'Documenten', href: '/dashboard/documents', icon: FileText },
+    { kind: "header", label: 'Documenten' },
+    { kind: "link", label: 'Mijn Documenten', href: '/dashboard/documents', icon: FileText },
+    { kind: "link", label: 'Uploadcentrum', href: '/dashboard/documents/upload-center', icon: FileText },
 
     { kind: "header", label: 'Dossiers' },
     { kind: "link", label: 'Dossier: Stikstof', href: '/dashboard/stikstof', icon: Leaf },
@@ -50,12 +54,45 @@ const NAV_ITEMS: NavItem[] = [
     { kind: "link", label: 'Instellingen', href: '/dashboard/settings', icon: Settings },
 ];
 
-function isItemActive(pathname: string, href: string) {
-    if (href === "/dashboard") return pathname === "/dashboard"
-    return pathname === href || pathname.startsWith(href + "/")
+function normalizePath(pathname: string) {
+    if (pathname.length > 1 && pathname.endsWith("/")) return pathname.slice(0, -1)
+    return pathname
 }
 
-function NavLinks({ pathname, onNavigate }: { pathname: string; onNavigate?: () => void }) {
+function getMatchScore(pathname: string, href: string) {
+    const current = normalizePath(pathname)
+    const target = normalizePath(href)
+
+    if (target === "/dashboard") {
+        return current === target ? 10000 + target.length : -1
+    }
+
+    if (current === target) return 10000 + target.length
+    if (current.startsWith(target + "/")) return target.length
+    return -1
+}
+
+function getActiveHref(pathname: string, items: NavItem[]) {
+    let bestMatch: { href: string; score: number } | null = null
+
+    for (const item of items) {
+        if (item.kind !== "link") continue
+        const score = getMatchScore(pathname, item.href)
+        if (score > (bestMatch?.score ?? -1)) {
+            bestMatch = { href: item.href, score }
+        }
+    }
+
+    return bestMatch?.href ?? null
+}
+
+function NavLinks({
+    activeHref,
+    onNavigate,
+}: {
+    activeHref: string | null
+    onNavigate?: () => void
+}) {
     return (
         <div className="space-y-1">
             {NAV_ITEMS.map((item, i) => {
@@ -67,7 +104,7 @@ function NavLinks({ pathname, onNavigate }: { pathname: string; onNavigate?: () 
                     )
                 }
 
-                const isActive = isItemActive(pathname, item.href)
+                const isActive = item.href === activeHref
 
                 return (
                     <Link
@@ -100,6 +137,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
     const { user } = useTenant();
     const [mobileNavOpen, setMobileNavOpen] = useState(false)
+    const activeHref = useMemo(() => getActiveHref(pathname, NAV_ITEMS), [pathname])
 
     return (
         <div className="flex h-screen bg-slate-50 overflow-hidden font-sans text-slate-900">
@@ -114,7 +152,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                 </div>
 
                 <div className="flex-1 overflow-y-auto py-6 px-4 space-y-1">
-                    <NavLinks pathname={pathname} />
+                    <NavLinks activeHref={activeHref} />
                 </div>
 
                 <div className="p-4 border-t border-slate-100">
@@ -145,8 +183,9 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                             <Menu size={20} />
                         </Button>
 
-                        <div className="min-w-0">
+                        <div className="min-w-0 flex items-center gap-2">
                             <TenantSwitch />
+                            <PlanPreviewSwitcher realPlan="starter" />
                         </div>
                     </div>
 
@@ -184,7 +223,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                             </div>
 
                             <div className="flex-1 overflow-y-auto py-4 px-3">
-                                <NavLinks pathname={pathname} onNavigate={() => setMobileNavOpen(false)} />
+                                <NavLinks activeHref={activeHref} onNavigate={() => setMobileNavOpen(false)} />
                             </div>
 
                             <div className="p-4 border-t border-slate-100">
@@ -205,7 +244,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                 {/* PAGE CONTENT SCROLLABLE AREA */}
                 <main className="flex-1 overflow-y-auto p-4 md:p-8 relative">
                     <div className="max-w-7xl mx-auto">
-                        {children}
+                        <PageTransition>{children}</PageTransition>
                     </div>
                 </main>
             </div>

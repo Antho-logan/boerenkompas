@@ -88,7 +88,7 @@ export default function LandingPage() {
                                     {LANDING_COPY.hero.cta_primary} <ArrowRight className="ml-2 w-4 h-4" />
                                 </Button>
                             </Link>
-                            <Button variant="outline" size="lg" className="w-full sm:w-auto border-slate-300 text-slate-700 hover:bg-white hover:text-emerald-800 h-12 px-8 text-base">
+                            <Button variant="outline" size="lg" className="w-full sm:w-auto border-slate-900 text-slate-900 hover:bg-slate-900 hover:text-white h-12 px-8 text-base font-bold transition-all duration-300">
                                 {LANDING_COPY.hero.cta_secondary}
                             </Button>
                         </div>
@@ -200,10 +200,10 @@ export default function LandingPage() {
                         {LANDING_COPY.closing.sub}
                     </p>
                     <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                        <Button className="bg-white text-emerald-900 hover:bg-emerald-50 text-lg h-14 px-8 rounded-xl font-bold shadow-xl">
+                        <Button className="bg-white text-emerald-900 hover:bg-white/95 text-lg h-14 px-8 rounded-xl font-bold shadow-xl border-none">
                             {LANDING_COPY.closing.cta_primary}
                         </Button>
-                        <Button variant="outline" className="border-emerald-700 text-emerald-100 hover:bg-emerald-800 hover:text-white text-lg h-14 px-8 rounded-xl font-medium">
+                        <Button className="bg-white text-emerald-900 hover:bg-white/95 text-lg h-14 px-8 rounded-xl font-bold shadow-xl border-none">
                             {LANDING_COPY.closing.cta_secondary}
                         </Button>
                     </div>

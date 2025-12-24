@@ -1,6 +1,10 @@
 /**
  * Supabase configuration (public env vars).
  * Single source of truth for env reading + validation.
+ * 
+ * NOTE: This module is evaluated at import time (module scope).
+ * For Next.js dev with HMR, the config is re-evaluated on file changes.
+ * The env vars themselves are loaded by Next.js from .env.local at startup.
  */
 
 export type SupabaseConfigIssue =
@@ -36,28 +40,75 @@ function looksLikeHttpsUrl(value: string): boolean {
     }
 }
 
+/**
+ * Check if value looks like a valid Supabase JWT.
+ * Real anon keys are JWTs with 3 dot-separated parts, typically 200+ chars.
+ */
 function looksJwtLike(value: string): boolean {
-    return value.split('.').filter(Boolean).length >= 3;
+    const parts = value.split('.');
+    // Must have exactly 3 parts (header.payload.signature)
+    if (parts.length !== 3) return false;
+    // Each part must have content
+    if (parts.some(p => p.length < 10)) return false;
+    // Total length check - real JWTs are 150+ chars minimum
+    if (value.length < 100) return false;
+    return true;
 }
 
+/**
+ * Detect placeholder URLs that should trigger config warnings.
+ * Only flags obvious placeholders, not real Supabase URLs.
+ */
 function isPlaceholderUrl(value: string): boolean {
     const lower = value.toLowerCase();
-    // Only flag known exact placeholders or very obvious patterns containing specific keywords
-    return (
-        lower.includes('your-project-id') ||
-        lower.includes('jouw-project-id') ||
-        lower.includes('project-ref') ||
-        lower.includes('placeholder')
-    );
+    
+    // Explicit placeholder patterns
+    if (lower.includes('your-project-id')) return true;
+    if (lower.includes('jouw-project-id')) return true;
+    if (lower.includes('project-ref')) return true;
+    if (lower.includes('placeholder')) return true;
+    if (lower.includes('example')) return true;
+    if (lower.includes('xxx')) return true;
+    
+    // Empty or malformed supabase.co URL
+    if (/https:\/\/\.?supabase\.co/i.test(lower)) return true;
+    
+    // Check for valid project ref format
+    try {
+        const parsed = new URL(value);
+        if (parsed.host.endsWith('.supabase.co')) {
+            const parts = parsed.host.split('.');
+            if (parts.length >= 3) {
+                const projectRef = parts[0];
+                // Real project refs are alphanumeric, typically 20+ chars
+                // Flag if it looks like a template/placeholder
+                if (projectRef.length < 10) return true;
+            }
+        }
+    } catch {
+        // URL parsing failed - will be caught by invalid_url check
+    }
+    
+    return false;
 }
 
+/**
+ * Detect placeholder anon keys.
+ */
 function isPlaceholderAnonKey(value: string): boolean {
     const lower = value.toLowerCase();
-    return (
-        lower === 'your-anon-key' ||
-        lower === 'jouw_anon_public_key' ||
-        lower.includes('placeholder')
-    );
+    
+    // Explicit placeholder patterns
+    if (lower === 'your-anon-key') return true;
+    if (lower === 'jouw_anon_public_key') return true;
+    if (lower.includes('placeholder')) return true;
+    if (lower.includes('your_')) return true;
+    if (lower.includes('your-')) return true;
+    
+    // Too short to be a real JWT
+    if (value.length < 50) return true;
+    
+    return false;
 }
 
 function buildConfig(): SupabaseConfig {
@@ -69,17 +120,28 @@ function buildConfig(): SupabaseConfig {
 
     const issues: SupabaseConfigIssue[] = [];
 
-    if (!supabaseUrl) issues.push('missing_url');
-    if (!supabaseAnonKey) issues.push('missing_anon_key');
-
-    if (supabaseUrl) {
-        if (!looksLikeHttpsUrl(supabaseUrl)) issues.push('invalid_url');
-        if (isPlaceholderUrl(supabaseUrl)) issues.push('placeholder_url');
+    // Check URL
+    if (!supabaseUrl) {
+        issues.push('missing_url');
+    } else {
+        if (!looksLikeHttpsUrl(supabaseUrl)) {
+            issues.push('invalid_url');
+        }
+        if (isPlaceholderUrl(supabaseUrl)) {
+            issues.push('placeholder_url');
+        }
     }
 
-    if (supabaseAnonKey) {
-        if (!looksJwtLike(supabaseAnonKey)) issues.push('invalid_anon_key');
-        if (isPlaceholderAnonKey(supabaseAnonKey)) issues.push('placeholder_anon_key');
+    // Check Anon Key
+    if (!supabaseAnonKey) {
+        issues.push('missing_anon_key');
+    } else {
+        // Check placeholder first (more specific)
+        if (isPlaceholderAnonKey(supabaseAnonKey)) {
+            issues.push('placeholder_anon_key');
+        } else if (!looksJwtLike(supabaseAnonKey)) {
+            issues.push('invalid_anon_key');
+        }
     }
 
     return {
@@ -90,15 +152,28 @@ function buildConfig(): SupabaseConfig {
     };
 }
 
+// Build config at module load time
 const computedConfig = buildConfig();
 
 export const supabaseUrl = computedConfig.supabaseUrl;
 export const supabaseAnonKey = computedConfig.supabaseAnonKey;
 
-// Safe dev log to verify loaded config
+// Safe dev log to verify loaded config (no secrets)
 if (process.env.NODE_ENV === 'development' && typeof window === 'undefined') {
-    const host = computedConfig.supabaseUrl ? new URL(computedConfig.supabaseUrl).host : '(missing)';
-    console.log('[Supabase Config] Host:', host, '| Anon Key Present:', !!computedConfig.supabaseAnonKey);
+    const host = computedConfig.supabaseUrl 
+        ? (() => { try { return new URL(computedConfig.supabaseUrl).host; } catch { return '(invalid)'; } })()
+        : '(missing)';
+    
+    const keyInfo = computedConfig.supabaseAnonKey
+        ? `Present (len=${computedConfig.supabaseAnonKey.length}, dots=${(computedConfig.supabaseAnonKey.match(/\./g) || []).length})`
+        : 'MISSING';
+    
+    console.log('[Supabase Config]', {
+        host,
+        anonKey: keyInfo,
+        isConfigured: computedConfig.isConfigured,
+        issues: computedConfig.issues.length > 0 ? computedConfig.issues : 'none',
+    });
 }
 
 export function getSupabaseConfig(): SupabaseConfig {

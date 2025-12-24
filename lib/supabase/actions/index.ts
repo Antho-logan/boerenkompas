@@ -33,10 +33,14 @@ export {
     getDocumentLinks,
     linkDocumentToRequirement,
     removeDocumentLink,
+    unlinkDocumentFromRequirement,
     getRequirementsWithStatus,
     getDossierCheckSummary,
     generateMissingItems,
 } from './dossier';
+
+// Dossier utilities (non-server-action helpers)
+export { getStatusReason } from '../utils/status-reason';
 
 // Export actions
 export {
@@ -62,3 +66,12 @@ export {
     getAuditLog,
     getAuditLogWithUsers,
 } from './audit';
+
+// KPI actions
+export {
+    getDashboardKpis,
+    getDashboardKpisWithMeta,
+    getKpiCounts,
+    getKpiDebugSnapshot,
+} from './kpis';
+export type { KPIResponse } from './kpis';

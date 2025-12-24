@@ -103,6 +103,61 @@
     --sidebar-accent-foreground: oklch(0.25 0.03 160);
     --sidebar-border: oklch(0.93 0.005 260);
     --sidebar-ring: oklch(0.25 0.03 160);
+
+    /* Chart Colors */
+    --chart-1: oklch(0.696 0.17 162.48);  /* emerald-500 */
+    --chart-2: oklch(0.623 0.214 259.815); /* blue-500 */
+    --chart-3: oklch(0.769 0.188 70.08);   /* amber-500 */
+    --chart-4: oklch(0.585 0.233 277.117); /* violet-500 */
+    --chart-5: oklch(0.554 0.046 257.417); /* slate-500 */
+}
+
+/* Dark Mode */
+.dark {
+    --background: oklch(0.13 0.02 260);
+    --foreground: oklch(0.98 0.01 260);
+
+    --card: oklch(0.17 0.015 260);
+    --card-foreground: oklch(0.98 0.01 260);
+
+    --popover: oklch(0.17 0.015 260);
+    --popover-foreground: oklch(0.98 0.01 260);
+
+    --primary: oklch(0.696 0.17 162.48);
+    --primary-foreground: oklch(0.13 0.02 260);
+
+    --secondary: oklch(0.23 0.015 260);
+    --secondary-foreground: oklch(0.98 0.01 260);
+
+    --muted: oklch(0.23 0.015 260);
+    --muted-foreground: oklch(0.65 0.02 260);
+
+    --accent: oklch(0.25 0.04 160);
+    --accent-foreground: oklch(0.98 0.01 260);
+
+    --destructive: oklch(0.637 0.237 25.331);
+    --destructive-foreground: oklch(0.98 0.01 260);
+
+    --border: oklch(0.27 0.015 260);
+    --input: oklch(0.27 0.015 260);
+    --ring: oklch(0.696 0.17 162.48);
+
+    /* Sidebar Dark */
+    --sidebar: oklch(0.15 0.015 260);
+    --sidebar-foreground: oklch(0.98 0.01 260);
+    --sidebar-primary: oklch(0.696 0.17 162.48);
+    --sidebar-primary-foreground: oklch(0.13 0.02 260);
+    --sidebar-accent: oklch(0.25 0.04 160);
+    --sidebar-accent-foreground: oklch(0.98 0.01 260);
+    --sidebar-border: oklch(0.27 0.015 260);
+    --sidebar-ring: oklch(0.696 0.17 162.48);
+
+    /* Chart Colors Dark (slightly brighter for dark bg) */
+    --chart-1: oklch(0.75 0.18 162.48);
+    --chart-2: oklch(0.68 0.22 259.815);
+    --chart-3: oklch(0.82 0.19 70.08);
+    --chart-4: oklch(0.65 0.24 277.117);
+    --chart-5: oklch(0.62 0.05 257.417);
 }
 
 @layer base {
@@ -215,6 +270,22 @@
         opacity: 1;
         transform: scaleY(1);
     }
+}
+
+@keyframes slide-in-right {
+    from {
+        opacity: 0;
+        transform: translateX(100%);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.animate-slide-in-right {
+    animation: slide-in-right 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 /* Reduced Motion */

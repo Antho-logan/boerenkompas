@@ -10,9 +10,12 @@
 import { revalidatePath } from 'next/cache';
 import { createServerSupabaseClient, requireUser } from '@/lib/supabase/server';
 import { requireActiveTenant } from '@/lib/supabase/tenant';
+import type { PlanId } from '@/lib/plans';
+import { PLAN_ORDER, hasFeature } from '@/lib/plans';
 import { getRequirementsWithStatus, getDossierTemplates } from './dossier';
 import { logAuditEvent } from './audit';
 import type { Export, ExportWithDetails, RequirementWithStatus } from '@/lib/supabase/types';
+import { ExportLimitError } from '@/lib/supabase/errors';
 
 /**
  * SECURITY: HTML escape function to prevent XSS
@@ -26,6 +29,20 @@ function escapeHtml(unsafe: string | null | undefined): string {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#039;');
+}
+
+function resolvePlan(plan: string | null | undefined): PlanId {
+  if (plan && PLAN_ORDER.includes(plan as PlanId)) {
+    return plan as PlanId;
+  }
+  return 'starter';
+}
+
+function getMonthBounds(): { monthStart: string; nextMonthStart: string } {
+  const now = new Date();
+  const monthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1, 0, 0, 0, 0));
+  const nextMonthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1, 0, 0, 0, 0));
+  return { monthStart: monthStart.toISOString(), nextMonthStart: nextMonthStart.toISOString() };
 }
 
 /**
@@ -53,9 +70,8 @@ export async function getExports(): Promise<ExportWithDetails[]> {
 }
 
 /**
- * Generate export HTML skeleton (without signed URLs)
- * Signed URLs will be injected when viewing
- * 
+ * Generate export HTML with token-based download links
+ *
  * SECURITY: All user content is escaped
  */
 function generateExportHtml(
@@ -63,7 +79,8 @@ function generateExportHtml(
   templateName: string,
   templateVersion: string,
   requirements: RequirementWithStatus[],
-  generatedAt: Date
+  generatedAt: Date,
+  shareToken: string
 ): string {
   // SECURITY: Escape all user-provided content
   const safeTenantName = escapeHtml(tenantName);
@@ -83,6 +100,8 @@ function generateExportHtml(
     return acc;
   }, {} as Record<string, RequirementWithStatus[]>);
 
+  const tokenPath = encodeURIComponent(shareToken);
+
   const categoryHtml = Object.entries(categorized)
     .map(([category, reqs]) => {
       // SECURITY: Escape category name
@@ -94,9 +113,15 @@ function generateExportHtml(
         const safeTitle = escapeHtml(req.title);
         const safeNotes = escapeHtml(req.notes);
         const safeDocTitle = req.linkedDocument ? escapeHtml(req.linkedDocument.title) : '';
+        const docId = req.linkedDocument?.id;
+        const downloadHref = docId
+          ? `/api/share/${tokenPath}/documents/${encodeURIComponent(docId)}/download`
+          : '';
+        const safeDocId = docId ? escapeHtml(docId) : '';
+        const safeDownloadHref = downloadHref ? escapeHtml(downloadHref) : '';
 
         const docInfo = req.linkedDocument
-          ? `<span class="doc-name" data-doc-id="${escapeHtml(req.linkedDocument.id)}">${safeDocTitle}</span>`
+          ? `<a class="doc-link" data-doc-id="${safeDocId}" href="${safeDownloadHref}" target="_blank" rel="noopener">${safeDocTitle}</a>`
           : '<span class="no-doc">Geen document gekoppeld</span>';
 
         return `
@@ -248,7 +273,8 @@ function generateExportHtml(
     .status-missing { background: #fee2e2; color: #991b1b; }
     .status-expired { background: #fef3c7; color: #92400e; }
     .status-review { background: #dbeafe; color: #1e40af; }
-    .doc-name { color: var(--blue); cursor: pointer; }
+    .doc-link { color: var(--blue); text-decoration: none; }
+    .doc-link:hover { text-decoration: underline; }
     .no-doc { color: var(--slate-500); font-style: italic; }
     .footer { 
       text-align: center; 
@@ -321,6 +347,43 @@ export async function createExport(templateId: string): Promise<Export> {
   const user = await requireUser();
   const tenant = await requireActiveTenant();
 
+  // Determine plan and enforce monthly export limits
+  const { data: tenantRow, error: tenantError } = await supabase
+    .from('tenants')
+    .select('plan')
+    .eq('id', tenant.id)
+    .single();
+
+  if (tenantError) {
+    console.error('Error fetching tenant plan:', tenantError);
+    throw new Error('Failed to verify export limits');
+  }
+
+  const plan = resolvePlan(tenantRow?.plan);
+  const unlimited = hasFeature(plan, 'exports_unlimited') === true;
+  const limitValue = hasFeature(plan, 'exports_monthly_limit');
+  const monthlyLimit = unlimited ? null : typeof limitValue === 'number' ? limitValue : 0;
+
+  if (!unlimited && monthlyLimit !== null) {
+    const { monthStart, nextMonthStart } = getMonthBounds();
+    const { count, error: countError } = await supabase
+      .from('exports')
+      .select('id', { count: 'exact', head: true })
+      .eq('tenant_id', tenant.id)
+      .gte('created_at', monthStart)
+      .lt('created_at', nextMonthStart);
+
+    if (countError) {
+      console.error('Error counting exports for quota:', countError);
+      throw new Error('Failed to verify export limits');
+    }
+
+    const used = count ?? 0;
+    if (monthlyLimit > 0 && used >= monthlyLimit) {
+      throw new ExportLimitError(monthlyLimit, used, monthStart, nextMonthStart);
+    }
+  }
+
   // Get template info
   const templates = await getDossierTemplates();
   const template = templates.find(t => t.id === templateId);
@@ -331,18 +394,19 @@ export async function createExport(templateId: string): Promise<Export> {
   // Get requirements with status
   const requirements = await getRequirementsWithStatus(templateId);
 
-  // Generate HTML (with XSS protection)
+  // Generate share token
+  const shareToken = crypto.randomUUID();
+
+  // Generate HTML (with XSS protection + token-based download links)
   const now = new Date();
   const indexHtml = generateExportHtml(
     tenant.name,
     template.name,
     template.version,
     requirements,
-    now
+    now,
+    shareToken
   );
-
-  // Generate share token
-  const shareToken = crypto.randomUUID();
 
   // Create export record
   const { data, error } = await supabase

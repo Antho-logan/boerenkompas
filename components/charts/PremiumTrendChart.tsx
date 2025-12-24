@@ -1,8 +1,32 @@
 "use client"
 
-import * as React from "react"
+/**
+ * PremiumTrendChart
+ *
+ * A polished area/line chart for trend visualization.
+ * Features smooth Catmull-Rom curves, optional target line,
+ * responsive sizing, and accessible interactions.
+ */
 
+import * as React from "react"
 import { cn } from "@/lib/utils"
+import {
+  CHART_CONFIG,
+  CHART_COLORS,
+  CHART_TONES,
+  type ChartTone,
+  usePrefersReducedMotion,
+  useContainerWidth,
+  useMounted,
+  clamp,
+  niceRange,
+  formatNumber,
+  buildSmoothPath,
+  getLabelInterval,
+  ChartEmptyState,
+  ChartSkeleton,
+  ChartTooltip,
+} from "./chart-primitives"
 
 export type TrendDatum = {
   label: string
@@ -14,94 +38,68 @@ type Props = {
   data: TrendDatum[]
   height?: number
   valueLabel?: string
+  unit?: string
   showTarget?: boolean
   formatValue?: (n: number) => string
   ariaLabel?: string
   className?: string
-  colorClassName?: string
-}
-
-function clamp(n: number, min: number, max: number) {
-  return Math.max(min, Math.min(max, n))
-}
-
-function usePrefersReducedMotion() {
-  const [reduced, setReduced] = React.useState(false)
-  React.useEffect(() => {
-    const mq = window.matchMedia("(prefers-reduced-motion: reduce)")
-    const onChange = () => setReduced(!!mq.matches)
-    onChange()
-    mq.addEventListener?.("change", onChange)
-    return () => mq.removeEventListener?.("change", onChange)
-  }, [])
-  return reduced
-}
-
-function niceRange(min: number, max: number) {
-  if (!Number.isFinite(min) || !Number.isFinite(max)) return { min: 0, max: 1 }
-  if (min === max) return { min: min - 1, max: max + 1 }
-  const span = max - min
-  const pad = span * 0.08
-  return { min: min - pad, max: max + pad }
-}
-
-function formatDefault(n: number) {
-  return new Intl.NumberFormat("nl-NL").format(Math.round(n))
-}
-
-function buildSmoothPath(points: { x: number; y: number }[]) {
-  if (points.length === 0) return ""
-  if (points.length === 1) return `M ${points[0]!.x} ${points[0]!.y}`
-
-  const d: string[] = []
-  d.push(`M ${points[0]!.x} ${points[0]!.y}`)
-  for (let i = 0; i < points.length - 1; i++) {
-    const p0 = points[i - 1] ?? points[i]!
-    const p1 = points[i]!
-    const p2 = points[i + 1]!
-    const p3 = points[i + 2] ?? p2
-
-    const cp1x = p1.x + (p2.x - p0.x) / 6
-    const cp1y = p1.y + (p2.y - p0.y) / 6
-    const cp2x = p2.x - (p3.x - p1.x) / 6
-    const cp2y = p2.y - (p3.y - p1.y) / 6
-
-    d.push(`C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${p2.x} ${p2.y}`)
-  }
-  return d.join(" ")
+  tone?: ChartTone
+  /** Show loading skeleton */
+  loading?: boolean
 }
 
 export function PremiumTrendChart({
   data,
-  height = 280,
+  height = CHART_CONFIG.height.lg,
   valueLabel = "",
+  unit = "",
   showTarget = true,
-  formatValue = formatDefault,
+  formatValue = (n) => formatNumber(Math.round(n)),
   ariaLabel = "Trend grafiek",
   className,
-  colorClassName = "text-emerald-600",
+  tone = "emerald",
+  loading = false,
 }: Props) {
   const reducedMotion = usePrefersReducedMotion()
-  const wrapRef = React.useRef<HTMLDivElement | null>(null)
-  const [width, setWidth] = React.useState(0)
+  const wrapRef = React.useRef<HTMLDivElement>(null)
+  const width = useContainerWidth(wrapRef)
+  const mounted = useMounted(50) // Slight delay to ensure path is ready
+
+  // Deferred data mount to satisfy "draw in" effect request
+  const [displayData, setDisplayData] = React.useState<TrendDatum[]>([])
 
   React.useEffect(() => {
-    const el = wrapRef.current
-    if (!el) return
-    const ro = new ResizeObserver((entries) => {
-      const w = entries[0]?.contentRect?.width ?? 0
-      setWidth(Math.floor(w))
-    })
-    ro.observe(el)
-    return () => ro.disconnect()
-  }, [])
+    if (reducedMotion) {
+      setDisplayData(data)
+      return
+    }
 
-  const pad = { l: 44, r: 16, t: 16, b: 28 }
+    // Set to empty first
+    setDisplayData([])
+
+    // Then set to real data in next frame to trigger path updates
+    const raf = requestAnimationFrame(() => {
+      setDisplayData(data)
+    })
+    return () => cancelAnimationFrame(raf)
+  }, [data, reducedMotion])
+
+  const pad = CHART_CONFIG.padding
   const w = Math.max(0, width)
   const h = height
   const innerW = Math.max(0, w - pad.l - pad.r)
   const innerH = Math.max(0, h - pad.t - pad.b)
 
+  // Handle empty/loading states
+  if (loading) {
+    return (
+      <div ref={wrapRef} className={cn("relative w-full", className)}>
+        <ChartSkeleton height={height} />
+      </div>
+    )
+  }
+
+  // Use original data for scales to keep axes stable
   const values = data.map((d) => d.value)
   const targets = showTarget
     ? data.map((d) => d.target).filter((x): x is number => typeof x === "number")
@@ -119,7 +117,9 @@ export function PremiumTrendChart({
     return pad.t + (1 - t) * innerH
   }
 
-  const points = values.map((v, i) => ({ x: xAt(i), y: yAt(v) }))
+  // Use displayData for rendering
+  const displayValues = displayData.map((d) => d.value)
+  const points = displayValues.map((v, i) => ({ x: xAt(i), y: yAt(v) }))
   const linePath = buildSmoothPath(points)
   const areaPath = (() => {
     if (points.length === 0) return ""
@@ -130,10 +130,10 @@ export function PremiumTrendChart({
   })()
 
   const targetPath = (() => {
-    if (!showTarget) return ""
-    const hasAny = data.some((d) => typeof d.target === "number")
+    if (!showTarget || displayData.length === 0) return ""
+    const hasAny = displayData.some((d) => typeof d.target === "number")
     if (!hasAny) return ""
-    const tPoints = data.map((d, i) => ({
+    const tPoints = displayData.map((d, i) => ({
       x: xAt(i),
       y: yAt(typeof d.target === "number" ? d.target : d.value),
     }))
@@ -141,7 +141,7 @@ export function PremiumTrendChart({
     return `M ${tPoints.map((p) => `${p.x} ${p.y}`).join(" L ")}`
   })()
 
-  const labelEvery = data.length <= 8 ? 1 : data.length <= 16 ? 2 : data.length <= 28 ? 3 : 4
+  const labelEvery = getLabelInterval(data.length)
 
   const [hoverIdx, setHoverIdx] = React.useState<number | null>(null)
   const [mouse, setMouse] = React.useState<{ x: number; y: number } | null>(null)
@@ -158,61 +158,56 @@ export function PremiumTrendChart({
 
     const insideX = mx >= pad.l && mx <= pad.l + innerW
     const insideY = my >= pad.t && my <= pad.t + innerH
-    if (!insideX || !insideY) {
+    if (!insideX || !insideY || displayData.length === 0) {
       setHoverIdx(null)
       setMouse(null)
       return
     }
 
     const raw = (mx - pad.l) / (xStep || 1)
-    const idx = clamp(Math.round(raw), 0, Math.max(0, data.length - 1))
+    const idx = clamp(Math.round(raw), 0, Math.max(0, displayData.length - 1))
     setHoverIdx(idx)
     setMouse({ x: mx, y: my })
   }
 
-  const [mounted, setMounted] = React.useState(false)
-  React.useEffect(() => {
-    const t = window.setTimeout(() => setMounted(true), 10)
-    return () => window.clearTimeout(t)
-  }, [])
-
-  const dashArray = reducedMotion ? "none" : mounted ? "0" : "900"
-  const dashOffset = reducedMotion ? "0" : mounted ? "0" : "900"
+  const dashArray = reducedMotion ? "none" : "1000 1000"
+  const dashOffset = reducedMotion ? "0" : (mounted && displayData.length > 0) ? "0" : "1000"
 
   const hoverX = hoverIdx != null ? xAt(hoverIdx) : null
-  const hoverY = hoverIdx != null ? yAt(values[hoverIdx]!) : null
+  const hoverY = hoverIdx != null ? yAt(displayValues[hoverIdx]!) : null
 
   const gradientId = React.useId().replace(/:/g, "")
+  const toneConfig = CHART_TONES[tone]
 
+  // Tooltip rendering
   const tooltip = (() => {
-    if (hoverIdx == null || mouse == null) return null
-    const d = data[hoverIdx]!
-    const val = formatValue(d.value)
-    const tgt = typeof d.target === "number" ? formatValue(d.target) : null
+    if (hoverIdx == null || mouse == null || displayData.length === 0) return null
+    const d = displayData[hoverIdx]!
+    
+    const tipW = 200
+    const tipH = d.target ? 100 : 70
+    const left = clamp(mouse.x + 20, 10, w - tipW - 10)
+    const top = clamp(mouse.y - tipH - 20, 10, h - tipH - 10)
 
-    const tipW = 220
-    const tipH = tgt ? 74 : 58
-    const left = clamp(mouse.x + 14, 8, w - tipW - 8)
-    const top = clamp(mouse.y - tipH - 10, 8, h - tipH - 8)
+    const tooltipItems = [
+      {
+        name: "Realisatie",
+        value: `${formatValue(d.value)}${unit ? ` ${unit}` : ""}`,
+        colorClass: toneConfig.bg,
+      },
+    ]
+
+    if (typeof d.target === "number") {
+      tooltipItems.push({
+        name: "Norm",
+        value: `${formatValue(d.target)}${unit ? ` ${unit}` : ""}`,
+        colorClass: "bg-slate-300 dark:bg-slate-600",
+      })
+    }
 
     return (
-      <foreignObject x={left} y={top} width={tipW} height={tipH} pointerEvents="none">
-        <div className="rounded-xl border border-slate-200 bg-white/95 shadow-sm backdrop-blur px-3 py-2 text-xs">
-          <div className="flex items-center justify-between gap-3">
-            <div className="font-medium text-slate-900">{d.label}</div>
-            <div className="text-slate-500">{valueLabel}</div>
-          </div>
-          <div className="mt-1 flex items-end justify-between">
-            <div className="text-slate-600">Realisatie</div>
-            <div className="font-semibold text-slate-900">{val}</div>
-          </div>
-          {tgt && (
-            <div className="mt-0.5 flex items-end justify-between">
-              <div className="text-slate-600">Norm</div>
-              <div className="font-medium text-slate-800">{tgt}</div>
-            </div>
-          )}
-        </div>
+      <foreignObject x={left} y={top} width={tipW} height={tipH} pointerEvents="none" className="overflow-visible">
+        <ChartTooltip label={d.label} items={tooltipItems} />
       </foreignObject>
     )
   })()
@@ -220,12 +215,12 @@ export function PremiumTrendChart({
   return (
     <div ref={wrapRef} className={cn("relative w-full", className)}>
       {w === 0 ? (
-        <div className="h-[280px] w-full animate-pulse rounded-xl bg-slate-100" style={{ height }} />
+        <ChartSkeleton height={height} />
       ) : (
         <svg
           width={w}
           height={h}
-          className="block"
+          className="block select-none"
           onMouseMove={onMove}
           onMouseLeave={onLeave}
           role="img"
@@ -233,12 +228,12 @@ export function PremiumTrendChart({
         >
           <defs>
             <linearGradient id={`bk-area-${gradientId}`} x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="currentColor" stopOpacity="0.16" />
-              <stop offset="100%" stopColor="currentColor" stopOpacity="0.02" />
+              <stop offset="0%" stopColor={toneConfig.cssColor} stopOpacity="0.18" />
+              <stop offset="100%" stopColor={toneConfig.cssColor} stopOpacity="0.02" />
             </linearGradient>
           </defs>
 
-          {/* grid */}
+          {/* Horizontal grid lines */}
           {Array.from({ length: 4 }).map((_, i) => {
             const y = pad.t + (innerH * i) / 3
             return (
@@ -248,13 +243,14 @@ export function PremiumTrendChart({
                 x2={pad.l + innerW}
                 y1={y}
                 y2={y}
-                stroke="rgba(15, 23, 42, 0.06)"
+                stroke={CHART_COLORS.grid}
                 strokeWidth={1}
+                className="dark:stroke-slate-800"
               />
             )
           })}
 
-          {/* y labels */}
+          {/* Y-axis labels */}
           {Array.from({ length: 4 }).map((_, i) => {
             const v = max - ((max - min) * i) / 3
             const y = pad.t + (innerH * i) / 3
@@ -264,15 +260,15 @@ export function PremiumTrendChart({
                 x={pad.l - 10}
                 y={y + 4}
                 textAnchor="end"
-                fontSize={11}
-                fill="rgba(15, 23, 42, 0.55)"
+                fontSize={CHART_CONFIG.fontSize.tick}
+                className="fill-slate-500 dark:fill-slate-400"
               >
                 {formatValue(v)}
               </text>
             )
           })}
 
-          {/* x labels */}
+          {/* X-axis labels */}
           {data.map((d, i) => {
             if (i % labelEvery !== 0 && i !== data.length - 1) return null
             const x = xAt(i)
@@ -282,79 +278,80 @@ export function PremiumTrendChart({
                 x={x}
                 y={pad.t + innerH + 18}
                 textAnchor="middle"
-                fontSize={11}
-                fill="rgba(15, 23, 42, 0.55)"
+                fontSize={CHART_CONFIG.fontSize.tick}
+                className="fill-slate-500 dark:fill-slate-400"
               >
                 {d.label}
               </text>
             )
           })}
 
-          {/* area */}
-          <g className={colorClassName}>
-            <path
-              d={areaPath}
-              fill={`url(#bk-area-${gradientId})`}
-              style={{
-                opacity: reducedMotion ? 1 : mounted ? 1 : 0,
-                transition: reducedMotion ? "none" : "opacity 320ms ease",
-              }}
-            />
-          </g>
+          {/* Area fill */}
+          <path
+            d={areaPath}
+            fill={`url(#bk-area-${gradientId})`}
+            style={{
+              opacity: reducedMotion ? 1 : (mounted && displayData.length > 0) ? 1 : 0,
+              transition: reducedMotion ? "none" : `opacity ${CHART_CONFIG.animation.area}ms ease`,
+            }}
+          />
 
-          {/* target */}
-          {targetPath ? (
+          {/* Target/norm line */}
+          {targetPath && (
             <path
               d={targetPath}
               fill="none"
-              stroke="rgba(15, 23, 42, 0.25)"
+              stroke={CHART_COLORS.muted}
               strokeWidth={1.5}
               strokeDasharray="5 5"
+              strokeOpacity={0.5}
             />
-          ) : null}
+          )}
 
-          {/* line */}
-          <g className={colorClassName}>
-            <path
-              d={linePath}
-              fill="none"
-              stroke="currentColor"
-              strokeWidth={2.25}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              style={{
-                strokeDasharray: dashArray,
-                strokeDashoffset: dashOffset,
-                transition: reducedMotion ? "none" : "stroke-dashoffset 600ms ease",
-              }}
-            />
-          </g>
+          {/* Main data line */}
+          <path
+            d={linePath}
+            fill="none"
+            stroke={toneConfig.cssColor}
+            strokeWidth={2.25}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            style={{
+              strokeDasharray: dashArray,
+              strokeDashoffset: dashOffset,
+              transition: reducedMotion ? "none" : "stroke-dashoffset 2800ms ease-out 150ms",
+            }}
+          />
 
-          {/* hover */}
-          {hoverIdx != null && hoverX != null && hoverY != null ? (
+          {/* Hover crosshair and dot */}
+          {hoverIdx != null && hoverX != null && hoverY != null && displayData.length > 0 && (
             <>
               <line
                 x1={hoverX}
                 x2={hoverX}
                 y1={pad.t}
                 y2={pad.t + innerH}
-                stroke="rgba(15, 23, 42, 0.10)"
+                stroke={CHART_COLORS.grid}
                 strokeWidth={1}
               />
               <circle
                 cx={hoverX}
                 cy={hoverY}
-                r={4}
+                r={5}
                 fill="white"
-                stroke="rgba(5,150,105,0.9)"
-                strokeWidth={2}
+                stroke={toneConfig.cssColor}
+                strokeWidth={2.5}
+                className="drop-shadow-sm"
               />
             </>
-          ) : null}
+          )}
 
+          {/* Tooltip */}
           {tooltip}
         </svg>
       )}
     </div>
   )
 }
+
+export default PremiumTrendChart

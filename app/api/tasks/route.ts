@@ -1,33 +1,31 @@
 /**
  * Tasks API Route
+ * 
+ * SECURITY: All operations are tenant-scoped via server actions
  */
 
 import { NextResponse } from 'next/server';
-import { getTasks, getOpenTasks, createTask } from '@/lib/supabase/actions/tasks';
+import { getOpenTasks, createTask } from '@/lib/supabase/actions/tasks';
+import { handleApiError, requireAuth } from '@/lib/supabase/guards';
 
 export async function GET() {
     try {
         const tasks = await getOpenTasks();
         return NextResponse.json({ tasks });
     } catch (error) {
-        console.error('Error fetching tasks:', error);
-        return NextResponse.json(
-            { error: 'Failed to fetch tasks' },
-            { status: 500 }
-        );
+        return handleApiError(error);
     }
 }
 
 export async function POST(request: Request) {
     try {
+        const auth = await requireAuth({ requireRole: 'admin' });
+        if (auth instanceof NextResponse) return auth;
+
         const body = await request.json();
         const task = await createTask(body);
         return NextResponse.json({ task });
     } catch (error) {
-        console.error('Error creating task:', error);
-        return NextResponse.json(
-            { error: 'Failed to create task' },
-            { status: 500 }
-        );
+        return handleApiError(error);
     }
 }

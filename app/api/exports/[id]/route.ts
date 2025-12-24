@@ -1,15 +1,19 @@
 /**
- * Export Delete API Route
+ * Export API Route
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 import { deleteExport, getExport } from '@/lib/supabase/actions/exports';
+import { requireAuth } from '@/lib/supabase/guards';
 
 export async function GET(
     request: NextRequest,
     { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const auth = await requireAuth();
+        if (auth instanceof NextResponse) return auth;
+
         const { id } = await params;
         const exportRecord = await getExport(id);
 
@@ -35,6 +39,9 @@ export async function DELETE(
     { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const auth = await requireAuth({ requireRole: 'admin' });
+        if (auth instanceof NextResponse) return auth;
+
         const { id } = await params;
         await deleteExport(id);
         return NextResponse.json({ success: true });

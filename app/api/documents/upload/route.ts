@@ -9,8 +9,11 @@ import { requireActiveTenant } from '@/lib/supabase/tenant';
 import { createDocument } from '@/lib/supabase/actions/documents';
 
 export async function POST(request: NextRequest) {
+    let storagePath: string | null = null;
+    let uploadSucceeded = false;
+
     try {
-        const user = await requireUser();
+        await requireUser();
         const tenant = await requireActiveTenant();
         const supabase = await createServerSupabaseClient();
 
@@ -18,6 +21,8 @@ export async function POST(request: NextRequest) {
         const file = formData.get('file') as File | null;
         const title = formData.get('title') as string | null;
         const category = formData.get('category') as string | null;
+        const docDate = formData.get('doc_date');
+        const expiresAt = formData.get('expires_at');
 
         if (!file) {
             return NextResponse.json(
@@ -28,7 +33,7 @@ export async function POST(request: NextRequest) {
 
         // Generate document ID and storage path
         const docId = crypto.randomUUID();
-        const storagePath = `${tenant.id}/documents/${docId}/${file.name}`;
+        storagePath = `${tenant.id}/documents/${docId}/${file.name}`;
 
         // Upload to storage
         const { error: uploadError } = await supabase
@@ -47,23 +52,38 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Create document record
-        const document = await createDocument({
-            id: docId,
-            title: title || file.name.replace(/\.[^/.]+$/, ''),
-            file_name: file.name,
-            mime_type: file.type,
-            size_bytes: file.size,
-            storage_key: storagePath,
-            category: category || 'onbekend',
-            status: 'needs_review',
-            tags: [],
-        });
+        uploadSucceeded = true;
 
-        return NextResponse.json({
-            success: true,
-            document
-        });
+        // Create document record
+        try {
+            const document = await createDocument({
+                id: docId,
+                title: title || file.name.replace(/\.[^/.]+$/, ''),
+                file_name: file.name,
+                mime_type: file.type,
+                size_bytes: file.size,
+                storage_key: storagePath,
+                category: category || 'OVERIG',
+                status: 'needs_review',
+                doc_date: typeof docDate === 'string' && docDate ? docDate : null,
+                expires_at: typeof expiresAt === 'string' && expiresAt ? expiresAt : null,
+                tags: [],
+            });
+
+            return NextResponse.json({
+                success: true,
+                document
+            });
+        } catch (error) {
+            if (uploadSucceeded && storagePath) {
+                try {
+                    await supabase.storage.from('documents').remove([storagePath]);
+                } catch (cleanupError) {
+                    console.error('Failed to cleanup uploaded file after DB error:', cleanupError);
+                }
+            }
+            throw error;
+        }
 
     } catch (error) {
         console.error('Upload error:', error);

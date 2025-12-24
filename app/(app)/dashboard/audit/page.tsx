@@ -4,10 +4,10 @@ import { useEffect, useState, useCallback } from "react"
 import { useTenant } from "@/components/app/TenantProvider"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
-import { Shield, Loader2 } from "lucide-react"
 import { format } from "date-fns"
 import { nl } from "date-fns/locale"
 import { Skeleton } from "@/components/ui/skeleton"
+import DashboardPage from "@/components/app/DashboardPage"
 
 interface AuditEvent {
     id: string;
@@ -49,17 +49,11 @@ export default function AuditPage() {
     }, [fetchAuditLog]);
 
     return (
-        <div className="space-y-6 animate-fade-in-up">
-            <div className="flex items-center gap-4">
-                <div className="size-10 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center">
-                    <Shield size={20} />
-                </div>
-                <div>
-                    <h1 className="text-2xl font-bold text-slate-900">Audit Log</h1>
-                    <p className="text-slate-500">Volledig overzicht van acties en wijzigingen in dit dossier.</p>
-                </div>
-            </div>
-
+        <DashboardPage
+            title="Audit log"
+            description="Volledig overzicht van acties en wijzigingen in dit dossier."
+            className="animate-fade-in-up"
+        >
             <Card>
                 <CardContent className="p-0">
                     {loading ? (
@@ -123,7 +117,7 @@ export default function AuditPage() {
                     )}
                 </CardContent>
             </Card>
-        </div>
+        </DashboardPage>
     )
 }
 

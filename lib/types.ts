@@ -1,9 +1,11 @@
+import { PlanId } from './plans';
+
 export type Role = 'owner' | 'advisor' | 'staff' | 'viewer';
 
 export interface Tenant {
     id: string;
     name: string;
-    plan: 'start' | 'pro' | 'plus';
+    plan: PlanId;
     logoUrl?: string;
     kvk?: string;
 }
