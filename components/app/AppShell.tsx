@@ -37,6 +37,10 @@ const NAV_ITEMS: NavItem[] = [
     { kind: "header", label: 'Documenten' },
     { kind: "link", label: 'Mijn Documenten', href: '/dashboard/documents', icon: FileText },
     { kind: "link", label: 'Uploadcentrum', href: '/dashboard/documents/upload-center', icon: FileText },
+<<<<<<< HEAD
+=======
+    { kind: "link", label: 'Activiteit', href: '/dashboard/documents/activity', icon: FileClock },
+>>>>>>> b0318de (chore: sync updates)
 
     { kind: "header", label: 'Dossiers' },
     { kind: "link", label: 'Dossier: Stikstof', href: '/dashboard/stikstof', icon: Leaf },
@@ -119,7 +123,7 @@ function NavLinks({
                                 : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
                         )}
                     >
-                        <item.icon size={18} className={cn(isActive ? "text-emerald-700" : "text-slate-400")} />
+                        <item.icon size={18} className={cn(isActive ? "text-emerald-700" : "text-slate-400")} aria-hidden="true" />
                         <span className="flex-1 truncate">{item.label}</span>
                         {item.badge && (
                             <span className="px-1.5 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase bg-slate-100 text-slate-500 border border-slate-200">
@@ -135,7 +139,7 @@ function NavLinks({
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
-    const { user } = useTenant();
+    const { user, tenant } = useTenant();
     const [mobileNavOpen, setMobileNavOpen] = useState(false)
     const activeHref = useMemo(() => getActiveHref(pathname, NAV_ITEMS), [pathname])
 
@@ -146,7 +150,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             <aside className="w-64 border-r border-slate-200 bg-white hidden md:flex flex-col z-20">
                 <div className="h-16 flex items-center px-6 border-b border-slate-100">
                     <div className="size-8 rounded-lg bg-emerald-900 text-white flex items-center justify-center mr-3">
-                        <Leaf size={16} />
+                        <Leaf size={16} aria-hidden="true" />
                     </div>
                     <span className="font-bold text-lg tracking-tight">BoerenKompas</span>
                 </div>
@@ -180,20 +184,25 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                             aria-label="Open menu"
                             onClick={() => setMobileNavOpen(true)}
                         >
-                            <Menu size={20} />
+                            <Menu size={20} aria-hidden="true" />
                         </Button>
 
                         <div className="min-w-0 flex items-center gap-2">
                             <TenantSwitch />
+<<<<<<< HEAD
                             <PlanPreviewSwitcher realPlan="starter" />
+=======
+                            {/* Use real tenant plan from database */}
+                            <PlanPreviewSwitcher realPlan={tenant?.plan} />
+>>>>>>> b0318de (chore: sync updates)
                         </div>
                     </div>
 
                     <div className="flex items-center gap-4">
                         <Link href="/dashboard/notifications">
-                            <Button variant="ghost" size="icon" className="relative text-slate-500 hover:text-slate-800">
-                                <Bell size={20} />
-                                <span className="absolute top-2 right-2 size-2 bg-rose-500 rounded-full border border-white" />
+                            <Button variant="ghost" size="icon" className="relative text-slate-500 hover:text-slate-800" aria-label="Notificaties">
+                                <Bell size={20} aria-hidden="true" />
+                                <span className="absolute top-2 right-2 size-2 bg-rose-500 rounded-full border border-white" aria-hidden="true" />
                             </Button>
                         </Link>
                     </div>
@@ -205,7 +214,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                         <div className="flex h-full flex-col">
                             <div className="h-16 flex items-center px-4 border-b border-slate-100">
                                 <div className="size-9 rounded-xl bg-emerald-900 text-white flex items-center justify-center mr-3">
-                                    <Leaf size={16} />
+                                    <Leaf size={16} aria-hidden="true" />
                                 </div>
                                 <div className="min-w-0">
                                     <div className="font-bold text-slate-900 leading-tight">BoerenKompas</div>
@@ -218,7 +227,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                                     aria-label="Sluit menu"
                                     onClick={() => setMobileNavOpen(false)}
                                 >
-                                    <X size={18} />
+                                    <X size={18} aria-hidden="true" />
                                 </Button>
                             </div>
 

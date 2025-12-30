@@ -1,9 +1,9 @@
 "use client"
 
-import React, { useState } from "react"
+import React, { useState, useCallback } from "react"
 import {
     Search, Filter, Plus, FileText, Download, MoreVertical,
-    CheckCircle2, Pin, FolderClosed
+    CheckCircle2, Pin, FolderClosed, HardDrive, Loader2
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -12,11 +12,12 @@ import { Card } from "@/components/ui/card"
 import { DocumentItem, DOC_CATEGORIES } from "@/lib/documents/types"
 import { SlideOver } from "@/components/calendar/calendar-overlays"
 
-// --- Helper Components ---
+// --- Helper Functions ---
 
 const RECENT_WINDOW_MS = 7 * 24 * 60 * 60 * 1000
 const RECENT_CUTOFF_MS = Date.now() - RECENT_WINDOW_MS
 
+<<<<<<< HEAD
 function openDocumentDownload(docId: string) {
     const url = `/api/documents/${docId}/download`
     const newWindow = window.open(url, "_blank", "noopener,noreferrer")
@@ -25,6 +26,80 @@ function openDocumentDownload(docId: string) {
     }
 }
 
+=======
+/**
+ * Format bytes to human-readable string (KB, MB, GB)
+ */
+export function formatBytes(bytes: number): { value: string; unit: string } {
+    if (bytes === 0) return { value: '0', unit: 'B' };
+    
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    
+    const value = bytes / Math.pow(k, i);
+    // Show 1 decimal for values < 10, no decimals otherwise
+    const formatted = value < 10 ? value.toFixed(1) : Math.round(value).toString();
+    
+    return { value: formatted, unit: sizes[i] || 'B' };
+}
+
+/**
+ * Error messages for download failures
+ */
+const DOWNLOAD_ERROR_MESSAGES: Record<number, string> = {
+    401: 'Je bent niet ingelogd. Log opnieuw in en probeer het nog eens.',
+    403: 'Je hebt geen rechten om dit document te downloaden.',
+    404: 'Document niet gevonden. Mogelijk is het verwijderd.',
+    500: 'Er ging iets mis bij het downloaden. Probeer het later opnieuw.',
+};
+
+/**
+ * Safe document download with preflight check.
+ * Returns error message on failure, null on success.
+ */
+export async function downloadDocument(docId: string): Promise<string | null> {
+    const url = `/api/documents/${docId}/download`;
+    
+    try {
+        // Preflight fetch with manual redirect handling
+        const response = await fetch(url, {
+            method: 'GET',
+            redirect: 'manual', // Don't auto-follow redirects
+        });
+
+        // Success: API returns 302 redirect to signed URL
+        if (response.type === 'opaqueredirect' || response.status === 302 || response.status === 307) {
+            // Get the redirect location from headers
+            const redirectUrl = response.headers.get('Location');
+            if (redirectUrl) {
+                window.open(redirectUrl, '_blank', 'noopener,noreferrer');
+                return null;
+            }
+            // Fallback: just open the original URL (browser will follow redirect)
+            window.open(url, '_blank', 'noopener,noreferrer');
+            return null;
+        }
+
+        // Success: 200 means direct content (shouldn't happen, but handle it)
+        if (response.ok) {
+            window.open(url, '_blank', 'noopener,noreferrer');
+            return null;
+        }
+
+        // Error: return appropriate message
+        return DOWNLOAD_ERROR_MESSAGES[response.status] || 
+            'Download mislukt. Probeer het later opnieuw.';
+        
+    } catch (error) {
+        console.error('Download preflight error:', error);
+        return 'Download mislukt door een netwerkfout. Controleer je verbinding.';
+    }
+}
+
+// --- Helper Components ---
+
+>>>>>>> b0318de (chore: sync updates)
 export function StatusBadge({ status }: { status: DocumentItem['status'] }) {
     if (status === 'ok') return <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200">In orde</Badge>
     if (status === 'needs_review') return <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200 animate-pulse">Te controleren</Badge>
@@ -41,12 +116,25 @@ export function FileIcon({ type }: { type: DocumentItem['docType'] }) {
     return <div className="size-8 rounded bg-slate-100 text-slate-500 flex items-center justify-center border border-slate-200"><FileText size={14} /></div>
 }
 
+// --- Stats Type ---
+export interface DocumentsStatsData {
+    total: number;
+    attention: number;
+    recent: number;
+    storage: number; // bytes
+}
+
 // --- Main Components ---
 
-export function DocumentsStats({ docs }: { docs: DocumentItem[] }) {
-    const total = docs.length
-    const attention = docs.filter(d => d.status === 'needs_review' || d.status === 'expired').length
-    const recent = docs.filter(d => new Date(d.uploadedAt).getTime() > RECENT_CUTOFF_MS).length
+export function DocumentsStats({ docs, stats }: { docs: DocumentItem[]; stats?: DocumentsStatsData }) {
+    // Fallback to computed values from docs array if stats not provided
+    const total = stats?.total ?? docs.length
+    const attention = stats?.attention ?? docs.filter(d => d.status === 'needs_review' || d.status === 'expired').length
+    const recent = stats?.recent ?? docs.filter(d => new Date(d.uploadedAt).getTime() > RECENT_CUTOFF_MS).length
+    
+    // Format storage from bytes
+    const storageBytes = stats?.storage ?? 0;
+    const { value: storageValue, unit: storageUnit } = formatBytes(storageBytes);
 
     return (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 animate-fade-in-up">
@@ -67,8 +155,13 @@ export function DocumentsStats({ docs }: { docs: DocumentItem[] }) {
                 <div className="text-2xl font-bold text-slate-900 mt-1">{recent}</div>
             </Card>
             <Card className="p-4 border-slate-200 shadow-sm bg-slate-50/50">
-                <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">Opslag</p>
-                <div className="text-2xl font-bold text-slate-900 mt-1">2.4 <span className="text-sm font-medium text-slate-400">GB</span></div>
+                <div className="flex items-center justify-between">
+                    <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">Opslag</p>
+                    <HardDrive size={14} className="text-slate-400" />
+                </div>
+                <div className="text-2xl font-bold text-slate-900 mt-1">
+                    {storageValue} <span className="text-sm font-medium text-slate-400">{storageUnit}</span>
+                </div>
             </Card>
         </div>
     )
@@ -98,12 +191,80 @@ export function DocumentsFilterBar({ search, setSearch, onUpload }: { search: st
     )
 }
 
+/**
+ * Download button with loading state and error handling
+ */
+function DownloadButton({ 
+    docId, 
+    onError,
+    variant = "icon",
+    className = ""
+}: { 
+    docId: string; 
+    onError?: (message: string) => void;
+    variant?: "icon" | "full";
+    className?: string;
+}) {
+    const [downloading, setDownloading] = useState(false);
+
+    const handleDownload = useCallback(async (event: React.MouseEvent) => {
+        event.stopPropagation();
+        if (downloading) return;
+
+        setDownloading(true);
+        try {
+            const error = await downloadDocument(docId);
+            if (error && onError) {
+                onError(error);
+            }
+        } finally {
+            setDownloading(false);
+        }
+    }, [docId, downloading, onError]);
+
+    if (variant === "full") {
+        return (
+            <Button
+                className={`w-full bg-slate-900 text-white hover:bg-slate-800 ${className}`}
+                onClick={handleDownload}
+                disabled={downloading}
+            >
+                {downloading ? (
+                    <Loader2 className="mr-2 size-4 animate-spin" />
+                ) : (
+                    <Download className="mr-2 size-4" />
+                )}
+                {downloading ? 'Laden...' : 'Download'}
+            </Button>
+        );
+    }
+
+    return (
+        <Button
+            size="icon"
+            variant="ghost"
+            className={`h-8 w-8 text-slate-400 hover:text-slate-600 ${className}`}
+            onClick={handleDownload}
+            disabled={downloading}
+            aria-label="Download document"
+        >
+            {downloading ? (
+                <Loader2 size={16} className="animate-spin" />
+            ) : (
+                <Download size={16} />
+            )}
+        </Button>
+    );
+}
+
 export function DocumentsList({
     docs,
-    onSelect
+    onSelect,
+    onDownloadError,
 }: {
     docs: DocumentItem[],
-    onSelect: (d: DocumentItem) => void
+    onSelect: (d: DocumentItem) => void,
+    onDownloadError?: (message: string) => void,
 }) {
     if (docs.length === 0) {
         return (
@@ -152,6 +313,7 @@ export function DocumentsList({
                             <StatusBadge status={doc.status} />
                         </div>
                         <div className="col-span-6 md:col-span-2 flex justify-end items-center gap-1 pr-1">
+<<<<<<< HEAD
                             <Button
                                 size="icon"
                                 variant="ghost"
@@ -164,6 +326,9 @@ export function DocumentsList({
                             >
                                 <Download size={16} />
                             </Button>
+=======
+                            <DownloadButton docId={doc.id} onError={onDownloadError} />
+>>>>>>> b0318de (chore: sync updates)
                             <Button size="icon" variant="ghost" className="h-8 w-8 text-slate-400 hover:text-slate-600">
                                 <MoreVertical size={16} />
                             </Button>
@@ -175,7 +340,19 @@ export function DocumentsList({
     )
 }
 
-export function DocumentDetailSheet({ doc, isOpen, onClose, onUpdate }: { doc: DocumentItem | null, isOpen: boolean, onClose: () => void, onUpdate: (d: DocumentItem) => void }) {
+export function DocumentDetailSheet({ 
+    doc, 
+    isOpen, 
+    onClose, 
+    onUpdate,
+    onDownloadError,
+}: { 
+    doc: DocumentItem | null, 
+    isOpen: boolean, 
+    onClose: () => void, 
+    onUpdate?: (d: DocumentItem) => void,
+    onDownloadError?: (message: string) => void,
+}) {
     if (!doc) return null
 
     return (
@@ -200,6 +377,7 @@ export function DocumentDetailSheet({ doc, isOpen, onClose, onUpdate }: { doc: D
                     </div>
 
                     <div className="space-y-3 pt-4">
+<<<<<<< HEAD
                         <Button
                             className="w-full bg-slate-900 text-white hover:bg-slate-800"
                             onClick={() => openDocumentDownload(doc.id)}
@@ -207,6 +385,11 @@ export function DocumentDetailSheet({ doc, isOpen, onClose, onUpdate }: { doc: D
                             <Download className="mr-2 size-4" /> Download
                         </Button>
                         {doc.status !== 'ok' && (
+=======
+                        <DownloadButton docId={doc.id} onError={onDownloadError} variant="full" />
+                        {/* Approve button - only shown if onUpdate is provided (i.e., user is admin) */}
+                        {doc.status !== 'ok' && onUpdate && (
+>>>>>>> b0318de (chore: sync updates)
                             <Button variant="outline" className="w-full border-emerald-200 text-emerald-700 hover:bg-emerald-50" onClick={() => {
                                 onUpdate({ ...doc, status: 'ok' })
                                 onClose()

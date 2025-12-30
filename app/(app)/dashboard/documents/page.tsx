@@ -1,158 +1,319 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
-import { DocumentsStats, DocumentsFilterBar, DocumentsList, DocumentDetailSheet, UploadDialog } from "@/components/documents/document-components"
+import { useState, useEffect, useCallback, useMemo } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
 import { useTenant } from "@/components/app/TenantProvider"
+<<<<<<< HEAD
 import DashboardPage from "@/components/app/DashboardPage"
+=======
+import { Can } from "@/components/app/RBAC"
+import DashboardPage from "@/components/app/DashboardPage"
+import { mapApiErrorToMessage, canWrite } from "@/lib/supabase/errors"
+import { downloadDocument } from "@/components/documents/document-components"
+>>>>>>> b0318de (chore: sync updates)
 import type { Document } from "@/lib/supabase/types"
+import { DOC_CATEGORIES } from "@/lib/documents/types"
+import {
+    VaultSidebar,
+    VaultCategoryDropdown,
+    VaultToolbar,
+    VaultTable,
+    VaultCardList,
+    DocumentDrawer,
+    VaultTableSkeleton,
+    VaultEmptyState,
+    VaultStats,
+    type VaultFilters,
+    type CategoryCount,
+} from "@/components/documents/vault-components"
+import { Lock, AlertCircle, History, ExternalLink } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import Link from "next/link"
 
-// Map Supabase document to UI DocumentItem format
-function toDocumentItem(doc: Document) {
-    const categoryMap: Record<string, string> = {
-        'onbekend': 'OVERIG',
-        'bedrijfsgegevens': 'RVO_GLB',
-        'percelen': 'RVO_GLB',
-        'mest': 'MEST',
-        'vergunningen': 'STIKSTOF',
-        'dierenwelzijn': 'NVWA',
-        'financieel': 'ACCOUNTANT_BANK',
-    };
+// ─────────────────────────────────────────────────────────────────
+// ERROR TOAST COMPONENT
+// ─────────────────────────────────────────────────────────────────
 
-    const docTypeMap: Record<string, 'PDF' | 'IMAGE' | 'DOC' | 'XLS' | 'OTHER'> = {
-        'application/pdf': 'PDF',
-        'image/jpeg': 'IMAGE',
-        'image/png': 'IMAGE',
-        'image/webp': 'IMAGE',
-        'application/msword': 'DOC',
-        'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'DOC',
-        'application/vnd.ms-excel': 'XLS',
-        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': 'XLS',
-    };
-
-    return {
-        id: doc.id,
-        title: doc.title,
-        filename: doc.file_name,
-        category: categoryMap[doc.category.toLowerCase()] || 'OVERIG',
-        folder: doc.category,
-        docType: docTypeMap[doc.mime_type || ''] || 'OTHER',
-        year: doc.doc_date ? new Date(doc.doc_date).getFullYear() : new Date(doc.created_at).getFullYear(),
-        status: doc.status === 'ok' ? 'ok' : doc.status === 'expired' ? 'expired' : doc.status === 'missing' ? 'missing_info' : 'needs_review',
-        priority: 'normal' as const,
-        source: 'manual' as const,
-        uploadedAt: doc.created_at,
-        updatedAt: doc.updated_at,
-        tags: doc.tags || [],
-        notes: doc.summary || undefined,
-        // Keep original for API calls
-        _original: doc,
-    };
-}
-
-type DocumentsTabId = "all" | "recent" | "attention" | "folders"
-
-function TabButton({
-    id,
-    label,
-    count,
-    active,
-    onSelect,
-}: {
-    id: DocumentsTabId
-    label: string
-    count?: number
-    active: boolean
-    onSelect: (id: DocumentsTabId) => void
-}) {
+function ErrorToast({ message, onDismiss, variant = "warning" }: { message: string; onDismiss: () => void; variant?: "warning" | "error" }) {
+    const isError = variant === "error"
     return (
-        <button
-            onClick={() => onSelect(id)}
-            className={`px-4 py-2 text-sm font-medium rounded-lg transition-all border ${active
-                ? "bg-white text-slate-900 border-slate-200 shadow-sm"
-                : "text-slate-500 border-transparent hover:bg-slate-100 hover:text-slate-900"
-                }`}
+        <div 
+            className={`fixed bottom-4 right-4 z-50 max-w-sm ${isError ? 'bg-red-50 border-red-200 text-red-800' : 'bg-amber-50 border-amber-200 text-amber-800'} border px-4 py-3 rounded-lg shadow-lg text-sm flex items-center gap-3 animate-in slide-in-from-bottom-4`}
+            role="alert"
         >
-            {label}
-            {count !== undefined && (
-                <span
-                    className={`ml-2 px-1.5 py-0.5 rounded-full text-[10px] ${active ? "bg-slate-100" : "bg-slate-200"
-                        }`}
-                >
-                    {count}
-                </span>
-            )}
-        </button>
+            {isError ? <AlertCircle size={16} aria-hidden="true" /> : <Lock size={16} aria-hidden="true" />}
+            <span className="flex-1">{message}</span>
+            <button onClick={onDismiss} className={`${isError ? 'text-red-600 hover:text-red-800' : 'text-amber-600 hover:text-amber-800'}`} aria-label="Melding sluiten">×</button>
+        </div>
     )
 }
 
-export default function DocumentsPage() {
-    const { tenant } = useTenant();
-    const [docs, setDocs] = useState<ReturnType<typeof toDocumentItem>[]>([])
+// ─────────────────────────────────────────────────────────────────
+// DEFAULT FILTERS
+// ─────────────────────────────────────────────────────────────────
+
+const DEFAULT_FILTERS: VaultFilters = {
+    q: "",
+    category: "",
+    status: "",
+    sort: "newest",
+    expiry: "",
+    linked: "",
+}
+
+// ─────────────────────────────────────────────────────────────────
+// MAIN PAGE COMPONENT
+// ─────────────────────────────────────────────────────────────────
+
+export default function DocumentsVaultPage() {
+    const { tenant, role } = useTenant()
+    const router = useRouter()
+    const searchParams = useSearchParams()
+
+    const isAdmin = canWrite(role)
+
+    // State
+    const [documents, setDocuments] = useState<Document[]>([])
     const [loading, setLoading] = useState(true)
-    const [search, setSearch] = useState("")
-    const [currentTab, setCurrentTab] = useState<DocumentsTabId>("all")
+    const [error, setError] = useState<string | null>(null)
+    const [errorVariant, setErrorVariant] = useState<"warning" | "error">("warning")
+    const [downloadingId, setDownloadingId] = useState<string | null>(null)
 
-    // Dialogs
-    const [selectedDoc, setSelectedDoc] = useState<ReturnType<typeof toDocumentItem> | null>(null)
-    const [isDetailOpen, setIsDetailOpen] = useState(false)
-    const [isUploadOpen, setIsUploadOpen] = useState(false)
+    // Drawer state
+    const [selectedDocument, setSelectedDocument] = useState<Document | null>(null)
+    const [drawerOpen, setDrawerOpen] = useState(false)
 
-    // Fetch documents
+    // Stats
+    const [stats, setStats] = useState<{
+        total: number
+        attention: number
+        storage: number
+    } | null>(null)
+
+    // ─────────────────────────────────────────────────────────────
+    // URL SYNC: Read filters from URL
+    // ─────────────────────────────────────────────────────────────
+    const filters: VaultFilters = useMemo(() => ({
+        q: searchParams.get("q") || "",
+        category: searchParams.get("category") || "",
+        status: searchParams.get("status") || "",
+        sort: searchParams.get("sort") || "newest",
+        expiry: searchParams.get("expiry") || "",
+        linked: searchParams.get("linked") || "",
+    }), [searchParams])
+
+    // URL SYNC: Update URL when filters change
+    const setFilters = useCallback((newFilters: Partial<VaultFilters>) => {
+        const updatedFilters = { ...filters, ...newFilters }
+        const params = new URLSearchParams()
+
+        // Only add non-empty values
+        if (updatedFilters.q) params.set("q", updatedFilters.q)
+        if (updatedFilters.category) params.set("category", updatedFilters.category)
+        if (updatedFilters.status) params.set("status", updatedFilters.status)
+        if (updatedFilters.sort && updatedFilters.sort !== "newest") params.set("sort", updatedFilters.sort)
+        if (updatedFilters.expiry) params.set("expiry", updatedFilters.expiry)
+        if (updatedFilters.linked) params.set("linked", updatedFilters.linked)
+
+        const queryString = params.toString()
+        router.push(`/dashboard/documents${queryString ? `?${queryString}` : ""}`, { scroll: false })
+    }, [filters, router])
+
+    // Clear all filters
+    const clearFilters = useCallback(() => {
+        router.push("/dashboard/documents", { scroll: false })
+    }, [router])
+
+    // Check if any filters are active
+    const hasActiveFilters = filters.q || filters.category || filters.status || filters.expiry || filters.linked
+
+    // ─────────────────────────────────────────────────────────────
+    // ERROR HANDLING
+    // ─────────────────────────────────────────────────────────────
+    const showError = useCallback((message: string, variant: "warning" | "error" = "warning") => {
+        setError(message)
+        setErrorVariant(variant)
+        setTimeout(() => setError(null), 5000)
+    }, [])
+
+    // ─────────────────────────────────────────────────────────────
+    // DATA FETCHING
+    // ─────────────────────────────────────────────────────────────
     const fetchDocuments = useCallback(async () => {
-        if (!tenant) return;
+        if (!tenant) return
 
-        setLoading(true);
+        setLoading(true)
         try {
-            const response = await fetch('/api/documents');
+            const response = await fetch("/api/documents")
             if (response.ok) {
-                const data = await response.json();
-                setDocs((data.documents || []).map(toDocumentItem));
+                const data = await response.json()
+                setDocuments(data.documents || [])
+                if (data.stats) {
+                    setStats(data.stats)
+                }
             }
-        } catch (error) {
-            console.error('Error fetching documents:', error);
+        } catch (err) {
+            console.error("Error fetching documents:", err)
+            showError("Kon documenten niet laden.", "error")
         } finally {
-            setLoading(false);
+            setLoading(false)
         }
-    }, [tenant]);
+    }, [tenant, showError])
 
     useEffect(() => {
-        fetchDocuments();
-    }, [fetchDocuments]);
+        fetchDocuments()
+    }, [fetchDocuments])
 
-    // Handlers
-    const handleDocClick = (doc: ReturnType<typeof toDocumentItem>) => {
-        setSelectedDoc(doc)
-        setIsDetailOpen(true)
+    // ─────────────────────────────────────────────────────────────
+    // FILTERING & SORTING (Client-side for MVP)
+    // ─────────────────────────────────────────────────────────────
+    const filteredDocuments = useMemo(() => {
+        let result = [...documents]
+
+        // Search filter
+        if (filters.q) {
+            const query = filters.q.toLowerCase()
+            result = result.filter(doc =>
+                doc.title.toLowerCase().includes(query) ||
+                doc.file_name.toLowerCase().includes(query) ||
+                (doc.tags || []).some(tag => tag.toLowerCase().includes(query))
+            )
+        }
+
+        // Category filter
+        if (filters.category) {
+            result = result.filter(doc => doc.category === filters.category)
+        }
+
+        // Status filter
+        if (filters.status) {
+            result = result.filter(doc => doc.status === filters.status)
+        }
+
+        // Expiry filter
+        if (filters.expiry === "soon") {
+            const thirtyDaysFromNow = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+            result = result.filter(doc =>
+                doc.expires_at &&
+                new Date(doc.expires_at) <= thirtyDaysFromNow &&
+                new Date(doc.expires_at) > new Date()
+            )
+        } else if (filters.expiry === "expired") {
+            result = result.filter(doc =>
+                doc.expires_at && new Date(doc.expires_at) < new Date()
+            )
+        }
+
+        // Sorting
+        switch (filters.sort) {
+            case "newest":
+                result.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+                break
+            case "oldest":
+                result.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
+                break
+            case "name":
+                result.sort((a, b) => a.title.localeCompare(b.title, "nl"))
+                break
+            case "name_desc":
+                result.sort((a, b) => b.title.localeCompare(a.title, "nl"))
+                break
+            case "expiry":
+                result.sort((a, b) => {
+                    if (!a.expires_at) return 1
+                    if (!b.expires_at) return -1
+                    return new Date(a.expires_at).getTime() - new Date(b.expires_at).getTime()
+                })
+                break
+            case "size":
+                result.sort((a, b) => (b.size_bytes || 0) - (a.size_bytes || 0))
+                break
+        }
+
+        return result
+    }, [documents, filters])
+
+    // ─────────────────────────────────────────────────────────────
+    // CATEGORY COUNTS
+    // ─────────────────────────────────────────────────────────────
+    const categoryCounts = useMemo<CategoryCount[]>(() => {
+        const counts: Record<string, number> = {}
+
+        documents.forEach(doc => {
+            counts[doc.category] = (counts[doc.category] || 0) + 1
+        })
+
+        return DOC_CATEGORIES.map(cat => ({
+            category: cat.value,
+            label: cat.label,
+            count: counts[cat.value] || 0,
+        })).filter(cat => cat.count > 0)
+    }, [documents])
+
+    // ─────────────────────────────────────────────────────────────
+    // COMPUTED STATS
+    // ─────────────────────────────────────────────────────────────
+    const computedStats = useMemo(() => {
+        const attention = documents.filter(d => d.status === "needs_review" || d.status === "expired").length
+        const thirtyDaysFromNow = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+        const expiringSoon = documents.filter(d =>
+            d.expires_at &&
+            new Date(d.expires_at) <= thirtyDaysFromNow &&
+            new Date(d.expires_at) > new Date()
+        ).length
+
+        return {
+            total: stats?.total ?? documents.length,
+            attention: stats?.attention ?? attention,
+            expiringSoon,
+            storage: stats?.storage ?? 0,
+        }
+    }, [documents, stats])
+
+    // ─────────────────────────────────────────────────────────────
+    // ACTIONS
+    // ─────────────────────────────────────────────────────────────
+    const handleDocumentSelect = (doc: Document) => {
+        setSelectedDocument(doc)
+        setDrawerOpen(true)
     }
 
-    const handleUpload = async ({ title, file }: { title: string; file?: File }) => {
-        if (!file) {
-            // Just close dialog if no file
-            setIsUploadOpen(false);
-            return;
+    const handleDownload = useCallback(async (doc: Document) => {
+        setDownloadingId(doc.id)
+        try {
+            const error = await downloadDocument(doc.id)
+            if (error) {
+                showError(error, "error")
+            }
+        } finally {
+            setDownloadingId(null)
         }
+    }, [showError])
+
+    const handleDelete = useCallback(async (doc: Document) => {
+        if (!isAdmin) {
+            showError("Je hebt geen rechten (admin vereist).")
+            return
+        }
+
+        if (!confirm(`Weet je zeker dat je "${doc.title}" wilt verwijderen?`)) return
 
         try {
-            const formData = new FormData();
-            formData.append('file', file);
-            formData.append('title', title);
-            formData.append('category', 'onbekend');
-
-            const response = await fetch('/api/documents/upload', {
-                method: 'POST',
-                body: formData,
-            });
-
+            const response = await fetch(`/api/documents/${doc.id}`, { method: "DELETE" })
             if (response.ok) {
-                const data = await response.json();
-                setDocs(prev => [toDocumentItem(data.document), ...prev]);
+                setDrawerOpen(false)
+                await fetchDocuments()
             } else {
-                console.error('Upload failed');
+                const data = await response.json().catch(() => ({}))
+                showError(mapApiErrorToMessage(response.status, data), "error")
             }
-        } catch (error) {
-            console.error('Upload error:', error);
+        } catch (err) {
+            console.error("Delete error:", err)
+            showError("Er is iets misgegaan bij het verwijderen.", "error")
         }
+    }, [isAdmin, fetchDocuments, showError])
 
+<<<<<<< HEAD
         setIsUploadOpen(false);
     }
 
@@ -203,10 +364,22 @@ export default function DocumentsPage() {
                 </div>
             </DashboardPage>
         );
+=======
+    const handleUpload = () => {
+        if (!isAdmin) {
+            showError("Je hebt geen rechten (admin vereist).")
+            return
+        }
+        router.push("/dashboard/documents/upload-center")
+>>>>>>> b0318de (chore: sync updates)
     }
 
+    // ─────────────────────────────────────────────────────────────
+    // RENDER
+    // ─────────────────────────────────────────────────────────────
     return (
         <DashboardPage
+<<<<<<< HEAD
             title="Mijn documenten"
             description="Beheer je compliance en administratie op één plek."
             className="animate-fade-in-up"
@@ -220,96 +393,137 @@ export default function DocumentsPage() {
                     <TabButton id="recent" label="Recent" active={currentTab === "recent"} onSelect={setCurrentTab} />
                     <TabButton id="attention" label="Te Controleren" count={docs.filter(d => d.status === 'needs_review').length} active={currentTab === "attention"} onSelect={setCurrentTab} />
                     <TabButton id="folders" label="Mappen" active={currentTab === "folders"} onSelect={setCurrentTab} />
+=======
+            title="Mijn Documenten"
+            description="Beheer je compliance en administratie op één plek."
+            actions={
+                <div className="flex items-center gap-2">
+                    <Link href="/dashboard/documents/activity">
+                        <Button variant="outline" size="sm" className="gap-2 text-slate-600">
+                            <History size={16} aria-hidden="true" />
+                            <span className="hidden sm:inline">Activiteit</span>
+                        </Button>
+                    </Link>
+>>>>>>> b0318de (chore: sync updates)
                 </div>
+            }
+            className="animate-fade-in-up"
+        >
+            {/* Stats */}
+            <VaultStats
+                total={computedStats.total}
+                attention={computedStats.attention}
+                expiringSoon={computedStats.expiringSoon}
+                storage={computedStats.storage}
+                loading={loading}
+            />
 
-                <DocumentsFilterBar search={search} setSearch={setSearch} onUpload={() => setIsUploadOpen(true)} />
-            </div>
-
-            {/* Content */}
-            {currentTab === 'folders' ? (
-                <div className="h-64 flex items-center justify-center bg-white border border-slate-200 rounded-xl text-slate-400 animate-fade-in-up delay-200">
-                    <div className="text-center">
-                        <p>Mappenstructuur visualisatie (MVP Placeholder)</p>
-                        <p className="text-xs mt-2">Hier komen de vaste mappen voor RVO, Mest, etc.</p>
+            {/* Main Layout */}
+            <div className="flex gap-6">
+                {/* Sidebar - Desktop only */}
+                <aside className="hidden lg:block w-56 shrink-0">
+                    <div className="sticky top-4 space-y-4">
+                        <VaultSidebar
+                            categories={categoryCounts}
+                            selectedCategory={filters.category}
+                            onCategorySelect={(cat) => setFilters({ category: cat })}
+                            totalCount={documents.length}
+                            loading={loading}
+                        />
                     </div>
-                </div>
-            ) : (
-                <DocumentsList docs={filteredDocs as any} onSelect={handleDocClick as any} />
-            )}
+                </aside>
 
+<<<<<<< HEAD
             <DocumentDetailSheet doc={selectedDoc as any} isOpen={isDetailOpen} onClose={() => setIsDetailOpen(false)} onUpdate={handleUpdate as any} />
             <UploadDialogWithFile isOpen={isUploadOpen} onClose={() => setIsUploadOpen(false)} onUpload={handleUpload} />
         </DashboardPage>
     )
 }
+=======
+                {/* Main Content */}
+                <div className="flex-1 min-w-0 space-y-4">
+                    {/* Mobile Category Dropdown */}
+                    <div className="lg:hidden">
+                        <VaultCategoryDropdown
+                            categories={categoryCounts}
+                            selectedCategory={filters.category}
+                            onCategorySelect={(cat) => setFilters({ category: cat })}
+                            totalCount={documents.length}
+                        />
+                    </div>
+>>>>>>> b0318de (chore: sync updates)
 
-// Extended upload dialog with file support
-function UploadDialogWithFile({
-    isOpen,
-    onClose,
-    onUpload,
-}: {
-    isOpen: boolean
-    onClose: () => void
-    onUpload: (payload: { title: string; file?: File }) => void
-}) {
-    const [title, setTitle] = useState("")
-    const [file, setFile] = useState<File | null>(null)
-    const [uploading, setUploading] = useState(false)
-
-    if (!isOpen) return null
-
-    const handleSubmit = async () => {
-        if (!file) return;
-        setUploading(true);
-        await onUpload({ title: title || file.name.replace(/\.[^/.]+$/, ''), file });
-        setTitle("");
-        setFile(null);
-        setUploading(false);
-    };
-
-    return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity" onClick={onClose} />
-            <div className="relative w-full max-w-lg bg-white shadow-2xl animate-scale-in p-6 space-y-4 rounded-xl">
-                <h2 className="text-lg font-bold text-slate-900">Document Uploaden</h2>
-                <div className="space-y-2">
-                    <label className="text-sm font-medium text-slate-700">Titel (optioneel)</label>
-                    <input
-                        value={title}
-                        onChange={e => setTitle(e.target.value)}
-                        placeholder="Bijv. Grondmonsters 2025"
-                        className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                    {/* Toolbar */}
+                    <VaultToolbar
+                        filters={filters}
+                        onFiltersChange={setFilters}
+                        onUpload={handleUpload}
+                        isAdmin={isAdmin}
                     />
-                </div>
-                <div className="space-y-2">
-                    <label className="text-sm font-medium text-slate-700">Bestand</label>
-                    <input
-                        type="file"
-                        onChange={e => setFile(e.target.files?.[0] || null)}
-                        accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.webp"
-                        className="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100"
-                    />
-                    {file && (
-                        <p className="text-xs text-slate-500">{file.name} ({(file.size / 1024).toFixed(1)} KB)</p>
+
+                    {/* Results */}
+                    {loading ? (
+                        <VaultTableSkeleton />
+                    ) : filteredDocuments.length === 0 ? (
+                        <VaultEmptyState
+                            hasFilters={!!hasActiveFilters}
+                            onClearFilters={clearFilters}
+                            isAdmin={isAdmin}
+                        />
+                    ) : (
+                        <>
+                            {/* Results count */}
+                            <div className="text-sm text-slate-500">
+                                {filteredDocuments.length} document{filteredDocuments.length !== 1 ? "en" : ""} gevonden
+                                {hasActiveFilters && (
+                                    <button
+                                        onClick={clearFilters}
+                                        className="ml-2 text-emerald-600 hover:text-emerald-700 font-medium"
+                                    >
+                                        Filters wissen
+                                    </button>
+                                )}
+                            </div>
+
+                            {/* Table (Desktop) / Cards (Mobile) */}
+                            <div className="hidden md:block">
+                                <VaultTable
+                                    documents={filteredDocuments}
+                                    onSelect={handleDocumentSelect}
+                                    onDownload={handleDownload}
+                                    onDelete={isAdmin ? handleDelete : undefined}
+                                    isAdmin={isAdmin}
+                                    downloadingId={downloadingId}
+                                />
+                            </div>
+                            <div className="md:hidden">
+                                <VaultCardList
+                                    documents={filteredDocuments}
+                                    onSelect={handleDocumentSelect}
+                                    onDownload={handleDownload}
+                                    onDelete={isAdmin ? handleDelete : undefined}
+                                    isAdmin={isAdmin}
+                                    downloadingId={downloadingId}
+                                />
+                            </div>
+                        </>
                     )}
                 </div>
-                <div className="flex gap-2 justify-end pt-2">
-                    <button
-                        onClick={onClose}
-                        className="px-4 py-2 text-sm text-slate-600 hover:text-slate-900"
-                    >
-                        Annuleren
-                    </button>
-                    <button
-                        onClick={handleSubmit}
-                        disabled={!file || uploading}
-                        className="px-4 py-2 text-sm bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg disabled:opacity-50"
-                    >
-                        {uploading ? 'Uploaden...' : 'Uploaden'}
-                    </button>
-                </div>
             </div>
-        </div>
+
+            {/* Document Details Drawer */}
+            <DocumentDrawer
+                document={selectedDocument}
+                isOpen={drawerOpen}
+                onClose={(open) => setDrawerOpen(open)}
+                onDownload={handleDownload}
+                onDelete={isAdmin ? handleDelete : undefined}
+                isAdmin={isAdmin}
+                downloadingId={downloadingId}
+            />
+
+            {/* Error Toast */}
+            {error && <ErrorToast message={error} onDismiss={() => setError(null)} variant={errorVariant} />}
+        </DashboardPage>
     )
 }

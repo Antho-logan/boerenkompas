@@ -7,11 +7,14 @@ import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 
 // --- Page Header ---
-export function PageHeader({ title, subtitle, actions }: { title: ReactNode, subtitle: string, actions?: ReactNode }) {
+export function PageHeader({ title, subtitle, actions, badge }: { title: ReactNode, subtitle: string, actions?: ReactNode, badge?: ReactNode }) {
     return (
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 animate-fade-in-up pb-6">
             <div>
-                <h1 className="text-2xl font-bold text-slate-900 tracking-tight">{title}</h1>
+                <div className="flex items-center gap-3">
+                    <h1 className="text-2xl font-bold text-slate-900 tracking-tight">{title}</h1>
+                    {badge}
+                </div>
                 <p className="text-sm text-slate-500 mt-1">{subtitle}</p>
             </div>
             {actions && (
@@ -24,13 +27,16 @@ export function PageHeader({ title, subtitle, actions }: { title: ReactNode, sub
 }
 
 // --- Stat Card ---
-export function StatCard({ label, value, icon: Icon, trend, variant = 'default' }: { label: string, value: string, icon: LucideIcon, trend?: { val: number, label: string }, variant?: 'default' | 'warning' | 'critical' }) {
+export function StatCard({ label, value, icon: Icon, trend, variant = 'default', badge }: { label: string, value: string, icon: LucideIcon, trend?: { val: number, label: string }, variant?: 'default' | 'warning' | 'critical', badge?: ReactNode }) {
     return (
         <Card className="border-slate-200 shadow-sm hover:shadow-md transition-all">
             <CardContent className="p-5">
                 <div className="flex justify-between items-start">
                     <div>
-                        <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">{label}</p>
+                        <div className="flex items-center gap-2 mb-1">
+                            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">{label}</p>
+                            {badge}
+                        </div>
                         <h3 className="text-2xl font-bold text-slate-900">{value}</h3>
                     </div>
                     <div className={cn(

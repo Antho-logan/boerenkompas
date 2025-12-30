@@ -16,6 +16,7 @@ import { SlideOver } from "@/components/calendar/calendar-overlays"
 import { cn } from "@/lib/utils"
 import type { Advisor, AuditEvent, RequestItem, SharedItem } from "@/lib/advisors/types"
 import { ADVISORS_MOCK, MESSAGES_MOCK } from "@/lib/advisors/mock"
+import { PreviewBadge, DisabledCta } from "@/components/ui/preview-badge"
 
 // --- Helper Components ---
 
@@ -43,7 +44,10 @@ export function AdvisorsKpiRow({ advisorCount, openRequests, sharedCount, auditC
                             <kpi.icon size={20} />
                         </div>
                         <div>
-                            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">{kpi.label}</p>
+                            <div className="flex items-center gap-2">
+                                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">{kpi.label}</p>
+                                <PreviewBadge variant="demo-data" size="sm" showIcon={false} />
+                            </div>
                             <h3 className="text-2xl font-bold text-slate-900">{kpi.value}</h3>
                         </div>
                     </CardContent>
@@ -68,12 +72,15 @@ export function AdvisorList({ advisors, onOpenProfile }: { advisors: Advisor[], 
                                     <p className="text-sm text-slate-500">{adv.role}</p>
                                 </div>
                             </div>
-                            <Badge variant={adv.status === 'Actief' ? 'secondary' : 'outline'} className={cn(
-                                "text-[10px] h-5",
-                                adv.status === 'Actief' ? "bg-emerald-50 text-emerald-700" : "text-slate-500"
-                            )}>
-                                {adv.status}
-                            </Badge>
+                            <div className="flex items-center gap-2">
+                                <PreviewBadge variant="demo-data" size="sm" showIcon={false} />
+                                <Badge variant={adv.status === 'Actief' ? 'secondary' : 'outline'} className={cn(
+                                    "text-[10px] h-5",
+                                    adv.status === 'Actief' ? "bg-emerald-50 text-emerald-700" : "text-slate-500"
+                                )}>
+                                    {adv.status}
+                                </Badge>
+                            </div>
                         </div>
 
                         <div className="flex flex-wrap gap-2 mb-4">
@@ -92,13 +99,16 @@ export function AdvisorList({ advisors, onOpenProfile }: { advisors: Advisor[], 
                 </Card>
             ))}
 
-            {/* Add New Card */}
-            <button className="border-2 border-dashed border-slate-200 rounded-xl flex flex-col items-center justify-center p-6 text-slate-400 hover:bg-slate-50 hover:border-slate-300 hover:text-slate-600 transition-all min-h-[180px]">
-                <div className="size-12 rounded-full bg-slate-100 flex items-center justify-center mb-3">
-                    <UserPlus size={20} />
-                </div>
-                <span className="font-bold text-sm">Nodig adviseur uit</span>
-            </button>
+            {/* Add New Card - Disabled */}
+            <DisabledCta reason="Adviseurs uitnodigen komt binnenkort" className="h-full">
+                <button className="w-full h-full border-2 border-dashed border-slate-200 rounded-xl flex flex-col items-center justify-center p-6 text-slate-400 transition-all min-h-[180px] cursor-not-allowed">
+                    <div className="size-12 rounded-full bg-slate-100 flex items-center justify-center mb-3">
+                        <UserPlus size={20} />
+                    </div>
+                    <span className="font-bold text-sm">Nodig adviseur uit</span>
+                    <span className="text-xs text-slate-400 mt-1">Binnenkort beschikbaar</span>
+                </button>
+            </DisabledCta>
         </div>
     )
 }
@@ -108,8 +118,13 @@ export function SharedItemsTable({ items }: { items: SharedItem[] }) {
     return (
         <Card className="border-slate-200 shadow-sm animate-fade-in-up delay-200">
             <CardHeader className="py-4 px-6 border-b border-slate-100 flex flex-row items-center justify-between">
-                <CardTitle className="text-sm font-bold text-slate-900">Gedeelde Items</CardTitle>
-                <Button variant="ghost" size="sm" className="text-emerald-600 text-xs h-8">Bekijk alles</Button>
+                <div className="flex items-center gap-2">
+                    <CardTitle className="text-sm font-bold text-slate-900">Gedeelde Items</CardTitle>
+                    <PreviewBadge variant="demo-data" size="sm" />
+                </div>
+                <DisabledCta reason="Volledige lijst komt binnenkort">
+                    <Button variant="ghost" size="sm" className="text-emerald-600 text-xs h-8">Bekijk alles</Button>
+                </DisabledCta>
             </CardHeader>
             <div className="overflow-x-auto">
                 <table className="w-full text-left text-sm">
@@ -151,7 +166,7 @@ export function SharedItemsTable({ items }: { items: SharedItem[] }) {
                                     </Badge>
                                 </td>
                                 <td className="px-6 py-3 text-right">
-                                    <Button size="icon" variant="ghost" className="h-6 w-6 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <Button size="icon" variant="ghost" className="h-6 w-6 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" disabled>
                                         <MoreVertical size={14} />
                                     </Button>
                                 </td>
@@ -169,11 +184,14 @@ export function RequestsPanel({ requests }: { requests: RequestItem[] }) {
     return (
         <Card className="border-slate-200 shadow-sm animate-fade-in-up delay-300 flex flex-col">
             <CardHeader className="py-4 px-6 border-b border-slate-100 bg-amber-50/30">
-                <CardTitle className="text-sm font-bold text-slate-900">Open Verzoeken</CardTitle>
+                <div className="flex items-center justify-between">
+                    <CardTitle className="text-sm font-bold text-slate-900">Open Verzoeken</CardTitle>
+                    <PreviewBadge variant="demo-data" size="sm" />
+                </div>
             </CardHeader>
             <div className="flex-1 divide-y divide-slate-100">
                 {requests.map(req => (
-                    <div key={req.id} className="p-4 hover:bg-slate-50 transition-colors group cursor-pointer">
+                    <div key={req.id} className="p-4 hover:bg-slate-50 transition-colors group">
                         <div className="flex justify-between items-start mb-1">
                             <h4 className="font-bold text-slate-900 text-xs line-clamp-1">{req.title}</h4>
                             {req.severity === 'Urgent' && <Badge className="bg-red-500 text-[9px] h-4 px-1">Urgent</Badge>}
@@ -186,14 +204,18 @@ export function RequestsPanel({ requests }: { requests: RequestItem[] }) {
                                     {new Date(req.dueDate).toLocaleDateString()}
                                 </span>
                             </div>
-                            <Button size="sm" variant="outline" className="h-6 text-[10px] px-2 border-slate-200">Open</Button>
+                            <DisabledCta reason="Verzoeken openen komt binnenkort">
+                                <Button size="sm" variant="outline" className="h-6 text-[10px] px-2 border-slate-200">Open</Button>
+                            </DisabledCta>
                         </div>
                     </div>
                 ))}
                 <div className="p-3">
-                    <Button variant="ghost" className="w-full text-xs text-slate-500 h-8 border border-dashed border-slate-300">
-                        <Plus size={12} className="mr-2" /> Nieuw verzoek
-                    </Button>
+                    <DisabledCta reason="Nieuwe verzoeken komen binnenkort">
+                        <Button variant="ghost" className="w-full text-xs text-slate-500 h-8 border border-dashed border-slate-300">
+                            <Plus size={12} className="mr-2" /> Nieuw verzoek
+                        </Button>
+                    </DisabledCta>
                 </div>
             </div>
         </Card>
@@ -205,7 +227,10 @@ export function AuditPanel({ events }: { events: AuditEvent[] }) {
     return (
         <Card className="border-slate-200 shadow-sm animate-fade-in-up delay-400 flex flex-col">
             <CardHeader className="py-4 px-6 border-b border-slate-100">
-                <CardTitle className="text-sm font-bold text-slate-900">Audit Trail</CardTitle>
+                <div className="flex items-center justify-between">
+                    <CardTitle className="text-sm font-bold text-slate-900">Audit Trail</CardTitle>
+                    <PreviewBadge variant="demo-data" size="sm" />
+                </div>
             </CardHeader>
             <div className="flex-1 p-0">
                 <div className="relative border-l border-slate-200 ml-6 my-4 space-y-5">
@@ -220,7 +245,9 @@ export function AuditPanel({ events }: { events: AuditEvent[] }) {
                     ))}
                 </div>
                 <div className="p-3 border-t border-slate-50">
-                    <Button variant="link" className="w-full text-xs text-slate-500 h-6">Bekijk volledige log</Button>
+                    <DisabledCta reason="Volledige log komt binnenkort">
+                        <Button variant="link" className="w-full text-xs text-slate-500 h-6">Bekijk volledige log</Button>
+                    </DisabledCta>
                 </div>
             </div>
         </Card>
@@ -234,6 +261,12 @@ export function AdvisorDetailSheet({ advisor, isOpen, onClose }: { advisor: Advi
     return (
         <SlideOver isOpen={isOpen} onClose={onClose} title="Adviseur Profiel">
             <div className="space-y-8">
+                {/* Preview Notice */}
+                <div className="bg-violet-50 border border-violet-200 rounded-xl p-3 flex items-center gap-2 text-sm text-violet-700">
+                    <PreviewBadge variant="preview" />
+                    <span>Dit is een demo-profiel. Wijzigingen worden niet opgeslagen.</span>
+                </div>
+
                 {/* Header */}
                 <div className="flex items-center gap-4 pb-6 border-b border-slate-100">
                     <AdvisorAvatar initials={advisor.avatarInitials} className="size-16 text-xl" />
@@ -247,7 +280,7 @@ export function AdvisorDetailSheet({ advisor, isOpen, onClose }: { advisor: Advi
                     </div>
                 </div>
 
-                {/* Permissions */}
+                {/* Permissions - Disabled switches */}
                 <div className="space-y-4">
                     <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wide">Toegang & Rechten</h3>
                     <div className="bg-slate-50 rounded-xl border border-slate-200 divide-y divide-slate-100">
@@ -256,29 +289,33 @@ export function AdvisorDetailSheet({ advisor, isOpen, onClose }: { advisor: Advi
                                 <p className="text-sm font-semibold text-slate-900">Lezen Documenten</p>
                                 <p className="text-xs text-slate-500">Mag documenten inzien en downloaden</p>
                             </div>
-                            <Switch checked={advisor.permissions.docsRead} />
+                            <Switch checked={advisor.permissions.docsRead} disabled />
                         </div>
                         <div className="p-4 flex items-center justify-between">
                             <div>
                                 <p className="text-sm font-semibold text-slate-900">Bewerken Registraties</p>
                                 <p className="text-xs text-slate-500">Mag mest/stikstof records wijzigen</p>
                             </div>
-                            <Switch checked={advisor.permissions.recordsEdit} />
+                            <Switch checked={advisor.permissions.recordsEdit} disabled />
                         </div>
                         <div className="p-4 flex items-center justify-between">
                             <div>
                                 <p className="text-sm font-semibold text-slate-900">Exporteren</p>
                                 <p className="text-xs text-slate-500">Mag dossiers genereren</p>
                             </div>
-                            <Switch checked={advisor.permissions.exportsCreate} />
+                            <Switch checked={advisor.permissions.exportsCreate} disabled />
                         </div>
                     </div>
+                    <p className="text-xs text-slate-400 italic">Rechtenbeheer is binnenkort beschikbaar.</p>
                 </div>
 
-                {/* Messages */}
+                {/* Messages - Disabled input */}
                 <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col h-[300px]">
-                    <div className="p-3 border-b border-slate-100 bg-slate-50/50 flex items-center gap-2 text-xs font-bold text-slate-500 uppercase">
-                        <MessageSquare size={14} /> Berichten
+                    <div className="p-3 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between text-xs font-bold text-slate-500 uppercase">
+                        <div className="flex items-center gap-2">
+                            <MessageSquare size={14} /> Berichten
+                        </div>
+                        <PreviewBadge variant="demo-data" size="sm" />
                     </div>
                     <div className="flex-1 p-4 overflow-y-auto space-y-3 bg-slate-50/30">
                         {MESSAGES_MOCK.filter(m => m.advisorId === 'adv1').map(msg => ( // Mock filter for display
@@ -291,15 +328,17 @@ export function AdvisorDetailSheet({ advisor, isOpen, onClose }: { advisor: Advi
                         ))}
                     </div>
                     <div className="p-3 border-t border-slate-100 bg-white flex gap-2">
-                        <Input placeholder="Typ een bericht..." className="h-8 text-xs" />
-                        <Button size="sm" className="h-8 bg-slate-900 text-white">Stuur</Button>
+                        <Input placeholder="Berichten komen binnenkort..." className="h-8 text-xs" disabled />
+                        <Button size="sm" className="h-8 bg-slate-900 text-white" disabled>Stuur</Button>
                     </div>
                 </div>
 
                 <div className="pt-4 flex flex-col gap-2">
-                    <Button variant="outline" className="w-full text-red-600 border-red-100 hover:bg-red-50 hover:border-red-200">
-                        Toegang Intrekken
-                    </Button>
+                    <DisabledCta reason="Toegang intrekken komt binnenkort">
+                        <Button variant="outline" className="w-full text-red-600 border-red-100 hover:bg-red-50 hover:border-red-200">
+                            Toegang Intrekken
+                        </Button>
+                    </DisabledCta>
                 </div>
             </div>
         </SlideOver>
@@ -313,50 +352,45 @@ export function InviteDialog({ isOpen, onClose }: { isOpen: boolean, onClose: ()
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity" onClick={onClose} />
             <Card className="relative w-full max-w-md bg-white shadow-2xl animate-scale-in p-6 space-y-4">
-                <h2 className="text-lg font-bold text-slate-900">Nodig Adviseur Uit</h2>
-                <div className="space-y-4 py-2">
+                <div className="flex items-center justify-between">
+                    <h2 className="text-lg font-bold text-slate-900">Nodig Adviseur Uit</h2>
+                    <PreviewBadge variant="coming-soon" />
+                </div>
+                
+                {/* Coming soon notice */}
+                <div className="bg-slate-50 border border-slate-200 rounded-lg p-4 text-center">
+                    <Clock className="mx-auto size-8 text-slate-400 mb-2" />
+                    <p className="text-sm font-medium text-slate-700">Uitnodigingen zijn binnenkort beschikbaar</p>
+                    <p className="text-xs text-slate-500 mt-1">We werken aan de mogelijkheid om adviseurs en accountants uit te nodigen.</p>
+                </div>
+
+                <div className="space-y-4 py-2 opacity-50 pointer-events-none">
                     <div className="space-y-2">
                         <Label>Naam</Label>
-                        <Input placeholder="Bijv. Jan de Vries" />
+                        <Input placeholder="Bijv. Jan de Vries" disabled />
                     </div>
                     <div className="space-y-2">
                         <Label>E-mailadres</Label>
-                        <Input placeholder="jan@voorbeeld.nl" />
+                        <Input placeholder="jan@voorbeeld.nl" disabled />
                     </div>
-	                    <div className="space-y-2">
-	                        <Label>Rol</Label>
-	                        <Select>
-	                            <SelectTrigger className="w-full">
-	                                <SelectValue>
-	                                    {(value) => {
-	                                        if (!value) return "Kies rol..."
-	                                        if (value === "acc") return "Accountant"
-	                                        if (value === "adv") return "Adviseur"
-	                                        if (value === "jur") return "Jurist"
-	                                        return String(value)
-	                                    }}
-	                                </SelectValue>
-	                            </SelectTrigger>
-	                            <SelectContent>
-	                                <SelectItem value="acc">Accountant</SelectItem>
-	                                <SelectItem value="adv">Adviseur</SelectItem>
-	                                <SelectItem value="jur">Jurist</SelectItem>
-	                            </SelectContent>
+                    <div className="space-y-2">
+                        <Label>Rol</Label>
+                        <Select disabled>
+                            <SelectTrigger className="w-full">
+                                <SelectValue>
+                                    {() => "Kies rol..."}
+                                </SelectValue>
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="acc">Accountant</SelectItem>
+                                <SelectItem value="adv">Adviseur</SelectItem>
+                                <SelectItem value="jur">Jurist</SelectItem>
+                            </SelectContent>
                         </Select>
-                    </div>
-                    <div className="space-y-3 pt-2">
-                        <Label>Permissies (Standaard)</Label>
-                        <div className="flex items-center gap-2">
-                            <Switch checked readOnly />
-                            <span className="text-sm text-slate-700">Mag documenten lezen</span>
-                        </div>
                     </div>
                 </div>
                 <div className="flex gap-2 justify-end pt-2">
-                    <Button variant="ghost" onClick={onClose}>Annuleren</Button>
-                    <Button className="bg-emerald-600 hover:bg-emerald-700 text-white" onClick={onClose}>
-                        <Mail className="mr-2 size-4" /> Verstuur Uitnodiging
-                    </Button>
+                    <Button variant="ghost" onClick={onClose}>Sluiten</Button>
                 </div>
             </Card>
         </div>

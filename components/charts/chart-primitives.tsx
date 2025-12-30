@@ -122,6 +122,11 @@ interface ChartCardProps {
   children: React.ReactNode
   className?: string
   headerRight?: React.ReactNode
+<<<<<<< HEAD
+=======
+  /** Optional badge to show next to title (e.g., PreviewBadge) */
+  badge?: React.ReactNode
+>>>>>>> b0318de (chore: sync updates)
   /** Controls whether CardContent has padding (default true) */
   padded?: boolean
 }
@@ -132,6 +137,10 @@ export function ChartCard({
   children,
   className,
   headerRight,
+<<<<<<< HEAD
+=======
+  badge,
+>>>>>>> b0318de (chore: sync updates)
   padded = true,
 }: ChartCardProps) {
   return (
@@ -142,9 +151,18 @@ export function ChartCard({
       <CardHeader className="pb-4 pt-6 px-6">
         <div className="flex items-start justify-between gap-4">
           <div className="space-y-1.5">
+<<<<<<< HEAD
             <CardTitle className="text-sm font-bold text-slate-900 dark:text-slate-100 tracking-tight uppercase">
               {title}
             </CardTitle>
+=======
+            <div className="flex items-center gap-2">
+              <CardTitle className="text-sm font-bold text-slate-900 dark:text-slate-100 tracking-tight uppercase">
+                {title}
+              </CardTitle>
+              {badge}
+            </div>
+>>>>>>> b0318de (chore: sync updates)
             {description && (
               <CardDescription className="text-xs font-medium text-slate-400 dark:text-slate-500">
                 {description}

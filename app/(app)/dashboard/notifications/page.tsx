@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button"
 import { formatDistanceToNow } from "date-fns"
 import { nl } from "date-fns/locale"
 import { Skeleton } from "@/components/ui/skeleton"
+import { PreviewBadge, PreviewBanner } from "@/components/ui/preview-badge"
 
 export default function NotificationsPage() {
     const { tenant } = useTenant();
@@ -50,11 +51,21 @@ export default function NotificationsPage() {
     return (
         <div className="max-w-2xl mx-auto space-y-6 animate-fade-in-up">
             <div className="flex items-center justify-between">
-                <h1 className="text-2xl font-bold text-slate-900">Notificaties</h1>
+                <div className="flex items-center gap-3">
+                    <h1 className="text-2xl font-bold text-slate-900">Notificaties</h1>
+                    <PreviewBadge variant="demo-data" />
+                </div>
                 <Button variant="outline" size="sm" disabled={loading || unreadCount === 0} onClick={markAllAsRead}>
                     Alles lezen
                 </Button>
             </div>
+
+            {/* Demo data notice */}
+            <PreviewBanner
+                title="Voorbeeldnotificaties"
+                description="Dit zijn demo-meldingen om de functionaliteit te tonen. In productie verschijnen hier echte systeem- en compliance-meldingen."
+                variant="demo-data"
+            />
 
             <div className="space-y-3">
                 {loading ? (

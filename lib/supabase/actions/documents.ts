@@ -90,7 +90,7 @@ export async function createDocument(
         action: 'document.created',
         entity_type: 'document',
         entity_id: data.id,
-        meta: { title: data.title, file_name: data.file_name },
+        meta: { title: data.title, file_name: data.file_name, category: data.category },
     });
 
     revalidatePath('/dashboard/documents');
