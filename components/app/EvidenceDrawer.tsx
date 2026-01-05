@@ -5,6 +5,7 @@ import { AICheck } from "@/lib/types";
 import { X, FileText, BookOpen, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { DisabledCta } from "@/components/ui/preview-badge";
 
 interface Props {
     check: AICheck | null;
@@ -41,8 +42,8 @@ export function EvidenceDrawer({ check, isOpen, onClose }: Props) {
                         </div>
                         <h3 className="font-bold text-lg text-slate-900 leading-tight">{check.title}</h3>
                     </div>
-                    <Button variant="ghost" size="icon" onClick={onClose} className="text-slate-400 hover:text-slate-900">
-                        <X size={20} />
+                    <Button variant="ghost" size="icon" onClick={onClose} className="text-slate-400 hover:text-slate-900" aria-label="Sluit details">
+                        <X size={20} aria-hidden="true" />
                     </Button>
                 </div>
 
@@ -56,7 +57,7 @@ export function EvidenceDrawer({ check, isOpen, onClose }: Props) {
                             {check.summary}
                         </div>
                         <div className="mt-2 flex items-center gap-2 text-xs text-slate-500">
-                            <ShieldCheck size={14} className="text-emerald-600" />
+                            <ShieldCheck size={14} className="text-emerald-600" aria-hidden="true" />
                             AI Confidence Score: <span className="font-bold text-slate-900">{check.confidence}%</span>
                         </div>
                     </section>
@@ -64,7 +65,7 @@ export function EvidenceDrawer({ check, isOpen, onClose }: Props) {
                     {/* Evidence: Rules */}
                     <section>
                         <h4 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-3 flex items-center gap-2">
-                            <BookOpen size={16} className="text-slate-400" />
+                            <BookOpen size={16} className="text-slate-400" aria-hidden="true" />
                             Wettelijke Kaders
                         </h4>
                         {check.evidence.rules.length > 0 ? (
@@ -76,8 +77,14 @@ export function EvidenceDrawer({ check, isOpen, onClose }: Props) {
                                             <p className="text-xs text-slate-500 mt-0.5">Versie: {rule.ruleset_version_id}</p>
                                         </div>
                                         {rule.url && (
-                                            <a href={rule.url} target="_blank" rel="noopener" className="text-slate-400 hover:text-blue-600">
-                                                <ExternalLink size={14} />
+                                            <a
+                                                href={rule.url}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="text-slate-400 hover:text-blue-600"
+                                                aria-label={`Open bron voor ${rule.title}`}
+                                            >
+                                                <ExternalLink size={14} aria-hidden="true" />
                                             </a>
                                         )}
                                     </li>
@@ -91,15 +98,15 @@ export function EvidenceDrawer({ check, isOpen, onClose }: Props) {
                     {/* Evidence: Docs */}
                     <section>
                         <h4 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-3 flex items-center gap-2">
-                            <FileText size={16} className="text-slate-400" />
+                            <FileText size={16} className="text-slate-400" aria-hidden="true" />
                             Gebruikte Documenten
                         </h4>
                         {check.evidence.docs.length > 0 ? (
                             <ul className="space-y-2">
                                 {check.evidence.docs.map((doc, i) => (
-                                    <li key={i} className="flex items-center gap-3 p-3 rounded border border-slate-100 hover:border-emerald-200 hover:bg-emerald-50/50 transition-colors cursor-pointer">
+                                    <li key={i} className="flex items-center gap-3 p-3 rounded border border-slate-100 bg-white">
                                         <div className="size-8 bg-white border border-slate-200 rounded flex items-center justify-center text-rose-500">
-                                            <FileText size={16} />
+                                            <FileText size={16} aria-hidden="true" />
                                         </div>
                                         <div>
                                             <p className="text-sm font-medium text-slate-900 truncate max-w-[200px]">{doc.filename}</p>
@@ -116,9 +123,11 @@ export function EvidenceDrawer({ check, isOpen, onClose }: Props) {
 
                 {/* Footer */}
                 <div className="p-4 border-t border-slate-100 bg-slate-50/50">
-                    <Button className="w-full bg-slate-900 text-white hover:bg-slate-800">
-                        Markeer als Gelezen
-                    </Button>
+                    <DisabledCta reason="Markeren komt binnenkort beschikbaar.">
+                        <Button className="w-full bg-slate-900 text-white hover:bg-slate-800" disabled>
+                            Markeer als gelezen
+                        </Button>
+                    </DisabledCta>
                 </div>
 
             </div>

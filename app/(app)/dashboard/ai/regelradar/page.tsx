@@ -1,6 +1,6 @@
 "use client"
 
-import { PreviewBadge } from "@/components/ui/preview-badge"
+import { PreviewBadge, DisabledCta } from "@/components/ui/preview-badge"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -45,12 +45,16 @@ export default function UpdatesPage() {
                     ))}
 
                     <Card className="p-8 border-dashed border-2 border-slate-200 bg-slate-50/50 flex flex-col items-center text-center">
-                        <Star className="size-10 text-amber-400 mb-4 fill-amber-100" />
+                        <Star className="size-10 text-amber-400 mb-4 fill-amber-100" aria-hidden="true" />
                         <h3 className="font-bold text-slate-900">Blijf op de hoogte</h3>
                         <p className="text-sm text-slate-500 max-w-md mt-2 mb-6">
                             Wil je meldingen ontvangen bij nieuwe wetswijzigingen? Meld je aan voor de preview.
                         </p>
-                        <Button className="bg-slate-900 text-white">Meld interesse</Button>
+                        <DisabledCta reason="Aanmelden komt binnenkort beschikbaar.">
+                            <Button className="bg-slate-900 text-white" disabled>
+                                Binnenkort
+                            </Button>
+                        </DisabledCta>
                     </Card>
                 </div>
             </div>

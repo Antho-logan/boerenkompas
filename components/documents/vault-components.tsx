@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useCallback } from "react"
+import React, { useMemo, useState } from "react"
 import {
     Search,
     Filter,
@@ -11,15 +11,12 @@ import {
     Eye,
     Link2,
     Calendar,
-    Clock,
     AlertCircle,
-    ChevronDown,
     ChevronRight,
     X,
     Loader2,
     FolderOpen,
     Upload,
-    ExternalLink,
     HardDrive,
     Info,
 } from "lucide-react"
@@ -42,8 +39,8 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
-import { DOC_CATEGORIES, type DocCategory } from "@/lib/documents/types"
-import { downloadDocument, formatBytes } from "@/components/documents/document-components"
+import { DOC_CATEGORIES } from "@/lib/documents/types"
+import { formatBytes } from "@/components/documents/document-components"
 import type { Document } from "@/lib/supabase/types"
 import { cn } from "@/lib/utils"
 import Link from "next/link"
@@ -157,10 +154,6 @@ export function VaultCategoryDropdown({
     onCategorySelect,
     totalCount,
 }: VaultSidebarProps) {
-    const selectedLabel = selectedCategory
-        ? categories.find(c => c.category === selectedCategory)?.label || selectedCategory
-        : `Alle documenten (${totalCount})`
-
     return (
         <Select value={selectedCategory || "all"} onValueChange={(v) => onCategorySelect(v === "all" ? "" : (v ?? ""))}>
             <SelectTrigger className="w-full bg-white border-slate-200">
@@ -395,6 +388,12 @@ export function VaultTable({
         return <Badge variant="outline" className="bg-slate-50 text-slate-500 border-slate-200 text-[10px]">{status}</Badge>
     }
 
+    const expiresSoonThreshold = useMemo(() => {
+        const threshold = new Date()
+        threshold.setDate(threshold.getDate() + 30)
+        return threshold
+    }, [])
+
     return (
         <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
             <div className="overflow-x-auto">
@@ -413,13 +412,23 @@ export function VaultTable({
                     <tbody className="divide-y divide-slate-50">
                         {documents.map((doc) => {
                             const { value: sizeValue, unit: sizeUnit } = formatBytes(doc.size_bytes || 0)
-                            const expiresSoon = doc.expires_at && new Date(doc.expires_at) < new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+                            const expiresSoon = doc.expires_at && new Date(doc.expires_at) < expiresSoonThreshold
 
                             return (
                                 <tr
                                     key={doc.id}
-                                    className="group hover:bg-slate-50/50 transition-colors cursor-pointer"
+                                    className="group hover:bg-slate-50/50 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/30 focus-visible:ring-inset"
                                     onClick={() => onSelect(doc)}
+                                    onKeyDown={(event) => {
+                                        if (event.currentTarget !== event.target) return
+                                        if (event.key === "Enter" || event.key === " ") {
+                                            event.preventDefault()
+                                            onSelect(doc)
+                                        }
+                                    }}
+                                    role="button"
+                                    tabIndex={0}
+                                    aria-label={`Open document ${doc.title || doc.file_name}`}
                                 >
                                     <td className="px-4 py-3">
                                         <div className="flex items-center gap-3">
@@ -550,8 +559,18 @@ export function VaultCardList({
             {documents.map((doc) => (
                 <Card
                     key={doc.id}
-                    className="p-4 hover:shadow-md transition-all cursor-pointer group"
+                    className="p-4 hover:shadow-md transition-all cursor-pointer group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/40 focus-visible:ring-offset-2"
                     onClick={() => onSelect(doc)}
+                    onKeyDown={(event) => {
+                        if (event.currentTarget !== event.target) return
+                        if (event.key === "Enter" || event.key === " ") {
+                            event.preventDefault()
+                            onSelect(doc)
+                        }
+                    }}
+                    role="button"
+                    tabIndex={0}
+                    aria-label={`Open document ${doc.title || doc.file_name}`}
                 >
                     <div className="flex items-start gap-3">
                         <div className="size-10 rounded-lg bg-slate-100 text-slate-400 flex items-center justify-center shrink-0 group-hover:bg-emerald-100 group-hover:text-emerald-600 transition-colors">
@@ -954,4 +973,3 @@ export function VaultStats({ total, attention, expiringSoon, storage, loading }:
         </div>
     )
 }
-

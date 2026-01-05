@@ -143,9 +143,9 @@ export function SharedItemsTable({ items }: { items: SharedItem[] }) {
                                 <td className="px-6 py-3 font-medium text-slate-900 truncate max-w-[200px]">{item.title}</td>
                                 <td className="px-6 py-3 text-slate-500">
                                     <div className="flex items-center gap-2">
-                                        {item.type === 'Document' ? <FileText size={14} className="text-blue-500" /> :
-                                            item.type === 'Export' ? <Download size={14} className="text-emerald-500" /> :
-                                                <MessageSquare size={14} className="text-amber-500" />}
+                                        {item.type === 'Document' ? <FileText size={14} className="text-blue-500" aria-hidden="true" /> :
+                                            item.type === 'Export' ? <Download size={14} className="text-emerald-500" aria-hidden="true" /> :
+                                                <MessageSquare size={14} className="text-amber-500" aria-hidden="true" />}
                                         {item.type}
                                     </div>
                                 </td>
@@ -166,8 +166,14 @@ export function SharedItemsTable({ items }: { items: SharedItem[] }) {
                                     </Badge>
                                 </td>
                                 <td className="px-6 py-3 text-right">
-                                    <Button size="icon" variant="ghost" className="h-6 w-6 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" disabled>
-                                        <MoreVertical size={14} />
+                                    <Button
+                                        size="icon"
+                                        variant="ghost"
+                                        className="h-6 w-6 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity"
+                                        aria-label="Meer opties (binnenkort)"
+                                        disabled
+                                    >
+                                        <MoreVertical size={14} aria-hidden="true" />
                                     </Button>
                                 </td>
                             </tr>

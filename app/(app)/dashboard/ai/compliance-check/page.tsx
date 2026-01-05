@@ -115,11 +115,6 @@ function LinkDocumentDialog({
         await onLink(docId)
     }
 
-    // Reset search when dialog opens
-    useEffect(() => {
-        if (isOpen) setSearch("")
-    }, [isOpen])
-
     return (
         <SlideOver
             isOpen={isOpen}
@@ -254,13 +249,6 @@ function UploadDocumentDialog({
     const [selectedFile, setSelectedFile] = useState<File | null>(null)
     const [dragActive, setDragActive] = useState(false)
     const fileInputRef = useRef<HTMLInputElement>(null)
-
-    useEffect(() => {
-        if (isOpen) {
-            setTitle("")
-            setSelectedFile(null)
-        }
-    }, [isOpen])
 
     const handleDrag = (e: React.DragEvent) => {
         e.preventDefault()
@@ -1099,7 +1087,7 @@ export default function DossierCheckPage() {
                                                 <td className="px-6 py-4 text-slate-600">
                                                     {req.linkedDocument ? (
                                                         <div>
-                                                            <span className="text-blue-600 hover:underline cursor-pointer">
+                                                            <span className="text-slate-700">
                                                                 {req.linkedDocument.title}
                                                             </span>
                                                             {req.linkedDocument.doc_date && (
@@ -1163,23 +1151,27 @@ export default function DossierCheckPage() {
             )}
 
             {/* Link Document Dialog */}
-            <LinkDocumentDialog
-                isOpen={linkDialogOpen}
-                onClose={() => setLinkDialogOpen(false)}
-                requirement={selectedRequirement}
-                documents={documents}
-                onLink={handleLinkDocument}
-                linking={linking}
-            />
+            {linkDialogOpen && (
+                <LinkDocumentDialog
+                    isOpen={linkDialogOpen}
+                    onClose={() => setLinkDialogOpen(false)}
+                    requirement={selectedRequirement}
+                    documents={documents}
+                    onLink={handleLinkDocument}
+                    linking={linking}
+                />
+            )}
 
             {/* Upload Document Dialog */}
-            <UploadDocumentDialog
-                isOpen={uploadDialogOpen}
-                onClose={() => setUploadDialogOpen(false)}
-                requirement={selectedRequirement}
-                onUpload={handleUploadAndLink}
-                uploading={uploading}
-            />
+            {uploadDialogOpen && (
+                <UploadDocumentDialog
+                    isOpen={uploadDialogOpen}
+                    onClose={() => setUploadDialogOpen(false)}
+                    requirement={selectedRequirement}
+                    onUpload={handleUploadAndLink}
+                    uploading={uploading}
+                />
+            )}
 
             {/* Unlink Confirmation Dialog */}
             <AlertDialog open={unlinkDialogOpen} onOpenChange={setUnlinkDialogOpen}>

@@ -262,7 +262,7 @@ export default function CalendarPage() {
                 setView={setView}
                 currentDate={currentDate}
                 setCurrentDate={setCurrentDate}
-                onNewItem={() => { }}
+                newItemDisabledReason="Agenda-items aanmaken komt binnenkort."
             />
 
             <div className="flex flex-col xl:flex-row gap-6 items-start">

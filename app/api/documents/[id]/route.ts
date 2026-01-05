@@ -9,7 +9,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { updateDocument, deleteDocument, getDocument } from '@/lib/supabase/actions/documents';
 import { requireAuth } from '@/lib/supabase/guards';
-import type { DocumentUpdate } from '@/lib/supabase/types';
+import type { Document, DocumentUpdate } from '@/lib/supabase/types';
+
+const sanitizeDocument = (doc: Document) => {
+    const safe = { ...doc } as Record<string, unknown>;
+    delete safe.storage_key;
+    delete safe.tenant_id;
+    delete safe.created_by;
+    delete safe.updated_by;
+    return safe as Omit<Document, "storage_key" | "tenant_id" | "created_by" | "updated_by">;
+};
 
 // Allowlist of fields that can be updated via PATCH
 const ALLOWED_UPDATE_FIELDS: (keyof DocumentUpdate)[] = [
@@ -49,7 +58,7 @@ export async function GET(
             );
         }
 
-        return NextResponse.json({ document });
+        return NextResponse.json({ document: sanitizeDocument(document) });
     } catch (error) {
         console.error('Error fetching document:', error);
         return NextResponse.json(

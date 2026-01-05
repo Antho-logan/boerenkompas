@@ -1,10 +1,9 @@
 "use client"
 
 import React, { useEffect, useRef, useState } from "react"
-import { Check, ChevronDown, ChevronUp, Loader2 } from "lucide-react"
+import { Check, ChevronDown, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card"
-import { Switch } from "@/components/ui/switch"
 import { cn } from "@/lib/utils"
 import { LANDING_COPY } from "@/lib/landing-copy"
 import { PLANS } from "@/lib/plans"
@@ -100,18 +99,42 @@ export default function PricingSection() {
                     </p>
 
                     {/* Toggle */}
-                    <div className="flex items-center justify-center gap-4">
-                        <span className={cn("text-sm font-medium transition-colors", !isAnnual ? "text-slate-900" : "text-slate-500")}>
-                            Maandelijks
-                        </span>
-                        <Switch
-                            checked={isAnnual}
-                            onCheckedChange={setIsAnnual}
-                            className="data-[state=checked]:bg-emerald-600"
-                        />
-                        <span className={cn("text-sm font-medium transition-colors", isAnnual ? "text-slate-900" : "text-slate-500")}>
-                            Jaarlijks <span className="text-emerald-600 ml-1">(10% besparen)</span>
-                        </span>
+                    <div className="flex items-center justify-center">
+                        <div
+                            role="group"
+                            aria-label="Facturatieperiode"
+                            className="relative grid grid-cols-2 items-center rounded-full bg-slate-100 p-1 border border-slate-200 shadow-inner"
+                        >
+                            <span
+                                className={cn(
+                                    "absolute inset-y-1 left-1 w-[calc(50%-0.25rem)] rounded-full bg-white shadow-sm transition-transform duration-300 ease-out motion-reduce:transition-none motion-reduce:transform-none",
+                                    isAnnual ? "translate-x-full" : "translate-x-0"
+                                )}
+                                aria-hidden="true"
+                            />
+                            <button
+                                type="button"
+                                onClick={() => setIsAnnual(false)}
+                                aria-pressed={!isAnnual}
+                                className={cn(
+                                    "relative z-10 px-4 py-2 text-xs font-semibold rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/40 whitespace-nowrap motion-reduce:transition-none",
+                                    !isAnnual ? "text-slate-900" : "text-slate-500"
+                                )}
+                            >
+                                Maandelijks
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setIsAnnual(true)}
+                                aria-pressed={isAnnual}
+                                className={cn(
+                                    "relative z-10 px-4 py-2 text-xs font-semibold rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/40 whitespace-nowrap motion-reduce:transition-none",
+                                    isAnnual ? "text-slate-900" : "text-slate-500"
+                                )}
+                            >
+                                Jaarlijks <span className="ml-1 text-[10px] text-emerald-600">-10%</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -136,7 +159,7 @@ export default function PricingSection() {
 
                             <Card
                                 className={cn(
-                                    "flex flex-col h-full border-slate-200 shadow-sm transition-all duration-300 hover:shadow-xl hover:-translate-y-1 hover:border-emerald-200 bg-white relative",
+                                    "flex flex-col h-full border-slate-200 shadow-sm transition-all duration-300 hover:shadow-xl hover:-translate-y-1 hover:border-emerald-200 bg-white relative focus-within:ring-2 focus-within:ring-emerald-500/20 focus-within:ring-offset-2 motion-reduce:transition-none motion-reduce:transform-none",
                                     plan.isPopular ? "ring-2 ring-emerald-500/20 shadow-md" : ""
                                 )}
                             >
@@ -158,32 +181,55 @@ export default function PricingSection() {
                                         const annualTotal = monthlyPrice ? monthlyPrice * 12 : null
                                         const discountedTotal = annualTotal ? annualTotal * 0.9 : null
                                         const effectiveMonthly = discountedTotal ? discountedTotal / 12 : null
+                                        const canShowAnnual = Boolean(annualTotal && discountedTotal && effectiveMonthly)
+                                        const showAnnual = isAnnual && canShowAnnual
 
-                                        if (isAnnual && annualTotal && discountedTotal && effectiveMonthly) {
-                                            return (
-                                                <div className="mb-6 space-y-1">
-                                                    <div className="flex items-baseline gap-2">
-                                                        <span className="text-xs text-slate-400 line-through">
-                                                            {formatCurrency(annualTotal)}
-                                                        </span>
-                                                        <span className="text-2xl font-bold text-slate-900">
-                                                            {formatCurrency(discountedTotal)}
-                                                        </span>
-                                                        <span className="text-slate-500 text-[10px]">/jaar</span>
-                                                    </div>
-                                                    <div className="text-[10px] text-slate-500">
-                                                        {formatCurrency(effectiveMonthly)} /mnd (jaarlijks)
-                                                    </div>
-                                                </div>
-                                            )
-                                        }
-
-                                        return (
-                                            <div className="mb-6 flex items-baseline gap-1">
+                                        const monthlyMarkup = (
+                                            <div className="flex items-baseline gap-1">
                                                 <span className="text-2xl font-bold text-slate-900">
                                                     {plan.price}
                                                 </span>
                                                 <span className="text-slate-500 text-[10px]">/mnd</span>
+                                            </div>
+                                        )
+
+                                        const annualMarkup = canShowAnnual ? (
+                                            <div className="space-y-1">
+                                                <div className="flex items-baseline gap-2">
+                                                    <span className="text-xs text-slate-400 line-through">
+                                                        {formatCurrency(annualTotal as number)}
+                                                    </span>
+                                                    <span className="text-2xl font-bold text-slate-900">
+                                                        {formatCurrency(discountedTotal as number)}
+                                                    </span>
+                                                    <span className="text-slate-500 text-[10px]">/jaar</span>
+                                                </div>
+                                                <div className="text-[10px] text-slate-500">
+                                                    {formatCurrency(effectiveMonthly as number)} /mnd (jaarlijks)
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            monthlyMarkup
+                                        )
+
+                                        return (
+                                            <div className="relative mb-6 min-h-[56px]">
+                                                <div
+                                                    className={cn(
+                                                        "absolute inset-0 transition-all duration-300 ease-out motion-reduce:transition-none motion-reduce:transform-none",
+                                                        showAnnual ? "opacity-0 translate-y-2" : "opacity-100 translate-y-0"
+                                                    )}
+                                                >
+                                                    {monthlyMarkup}
+                                                </div>
+                                                <div
+                                                    className={cn(
+                                                        "absolute inset-0 transition-all duration-300 ease-out motion-reduce:transition-none motion-reduce:transform-none",
+                                                        showAnnual ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-2 pointer-events-none"
+                                                    )}
+                                                >
+                                                    {annualMarkup}
+                                                </div>
                                             </div>
                                         )
                                     })()}
@@ -191,7 +237,7 @@ export default function PricingSection() {
                                         {plan.features.map((feat, idx) => (
                                             <li key={idx} className="flex items-start gap-2">
                                                 <div className="mt-0.5 size-4 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
-                                                    <Check size={10} strokeWidth={3} />
+                                                    <Check size={10} strokeWidth={3} aria-hidden="true" />
                                                 </div>
                                                 <span className="text-slate-700 leading-tight text-[11px]">{feat}</span>
                                             </li>
@@ -211,7 +257,7 @@ export default function PricingSection() {
                                         {plan.id === "pro" && isAuthenticated ? (
                                             checkoutLoading === "pro" ? (
                                                 <>
-                                                    <Loader2 size={14} className="mr-2 animate-spin" />
+                                                    <Loader2 size={14} className="mr-2 animate-spin" aria-hidden="true" />
                                                     Bezig...
                                                 </>
                                             ) : (
@@ -236,7 +282,7 @@ export default function PricingSection() {
                         <h4 className="font-bold text-slate-900 mb-4">Extra mogelijkheden</h4>
                         <div className="space-y-4">
                             {LANDING_COPY.pricing.addons.map((addon, i) => (
-                                <div key={i} className="flex items-center justify-between p-4 rounded-xl border border-slate-100 bg-slate-50/50">
+                                <div key={i} className="flex items-center justify-between p-4 rounded-xl border border-slate-100 bg-slate-50/50 transition-all duration-300 hover:border-emerald-200 hover:shadow-sm hover:-translate-y-0.5 focus-within:ring-2 focus-within:ring-emerald-500/20 focus-within:ring-offset-2 motion-reduce:transition-none motion-reduce:transform-none">
                                     <div>
                                         <span className="text-sm font-medium text-slate-900 block">{addon.title}</span>
                                         <span className="text-xs text-slate-500">{addon.desc}</span>
@@ -251,23 +297,57 @@ export default function PricingSection() {
                     <div>
                         <h4 className="font-bold text-slate-900 mb-4">Veelgestelde vragen pricing</h4>
                         <div className="space-y-2">
-                            {LANDING_COPY.faq.map((item, idx) => (
-                                <div
-                                    key={idx}
-                                    className="border border-slate-200 rounded-lg overflow-hidden bg-white hover:border-emerald-200 transition-colors cursor-pointer"
-                                    onClick={() => setOpenFaq(openFaq === idx ? null : idx)}
-                                >
-                                    <div className="p-4 flex items-center justify-between">
-                                        <span className="text-sm font-medium text-slate-900">{item.q}</span>
-                                        {openFaq === idx ? <ChevronUp size={16} className="text-slate-400" /> : <ChevronDown size={16} className="text-slate-400" />}
-                                    </div>
-                                    {openFaq === idx && (
-                                        <div className="px-4 pb-4 text-sm text-slate-600 animate-fade-in-down border-t border-slate-50 pt-2">
-                                            {item.a}
+                            {LANDING_COPY.faq.map((item, idx) => {
+                                const isOpen = openFaq === idx
+                                const panelId = `faq-panel-${idx}`
+                                const buttonId = `faq-button-${idx}`
+
+                                return (
+                                    <div
+                                        key={idx}
+                                        className={cn(
+                                            "border rounded-lg overflow-hidden bg-white transition-all",
+                                            isOpen ? "border-emerald-200 shadow-sm" : "border-slate-200 hover:border-emerald-200",
+                                            "focus-within:ring-2 focus-within:ring-emerald-500/20 focus-within:ring-offset-2"
+                                        )}
+                                    >
+                                        <button
+                                            id={buttonId}
+                                            aria-expanded={isOpen}
+                                            aria-controls={panelId}
+                                            onClick={() => setOpenFaq(isOpen ? null : idx)}
+                                            className="w-full p-4 flex items-center justify-between text-left text-sm font-medium text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/40"
+                                        >
+                                            <span className="pr-4">{item.q}</span>
+                                            <ChevronDown
+                                                size={16}
+                                                className={cn(
+                                                    "text-slate-400 transition-transform duration-300 motion-reduce:transition-none",
+                                                    isOpen ? "rotate-180" : "rotate-0"
+                                                )}
+                                                aria-hidden="true"
+                                            />
+                                        </button>
+                                        <div
+                                            className={cn(
+                                                "grid transition-[grid-template-rows] duration-300 ease-out motion-reduce:transition-none",
+                                                isOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
+                                            )}
+                                        >
+                                            <div className="overflow-hidden">
+                                                <div
+                                                    id={panelId}
+                                                    role="region"
+                                                    aria-labelledby={buttonId}
+                                                    className="px-4 pb-4 text-sm text-slate-600 border-t border-slate-50 pt-2"
+                                                >
+                                                    {item.a}
+                                                </div>
+                                            </div>
                                         </div>
-                                    )}
-                                </div>
-                            ))}
+                                    </div>
+                                )
+                            })}
                         </div>
                     </div>
                 </div>

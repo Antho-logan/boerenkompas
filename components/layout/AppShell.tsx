@@ -167,25 +167,26 @@ export function TopBar({ onMenuClick }: { onMenuClick: () => void }) {
     return (
         <header className="sticky top-0 z-20 bg-white/80 backdrop-blur-xl border-b border-slate-200 h-16 px-4 sm:px-6 flex items-center justify-between">
             <div className="flex items-center gap-4 w-full max-w-lg">
-                <button onClick={onMenuClick} className="lg:hidden p-2 -ml-2 text-slate-500 hover:text-slate-700">
-                    <Menu size={20} />
+                <button onClick={onMenuClick} className="lg:hidden p-2 -ml-2 text-slate-500 hover:text-slate-700" aria-label="Open menu">
+                    <Menu size={20} aria-hidden="true" />
                 </button>
                 <div className="relative hidden sm:block w-full max-w-sm group">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-slate-400 group-focus-within:text-slate-600 transition-colors" />
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-slate-400 group-focus-within:text-slate-600 transition-colors" aria-hidden="true" />
                     <input
                         className="w-full h-10 pl-10 pr-4 bg-slate-50/50 hover:bg-slate-100 focus:bg-white border border-transparent focus:border-slate-200 rounded-xl outline-none text-sm transition-all placeholder:text-slate-400"
                         placeholder="Zoek in dossiers, percelen of regels..."
+                        aria-label="Zoek in dossiers, percelen of regels"
                     />
                 </div>
             </div>
 
             <div className="flex items-center gap-2 sm:gap-4">
-                <Button variant="ghost" size="icon" className="text-slate-500 hover:bg-slate-100 rounded-full relative">
-                    <Bell className="size-5" />
-                    <span className="absolute top-2.5 right-2.5 size-2 bg-red-500 rounded-full border-2 border-white"></span>
+                <Button variant="ghost" size="icon" className="text-slate-500 hover:bg-slate-100 rounded-full relative" aria-label="Notificaties">
+                    <Bell className="size-5" aria-hidden="true" />
+                    <span className="absolute top-2.5 right-2.5 size-2 bg-red-500 rounded-full border-2 border-white" aria-hidden="true"></span>
                 </Button>
-                <Button variant="ghost" size="icon" className="text-slate-500 hover:bg-slate-100 rounded-full hidden sm:flex">
-                    <HelpCircle className="size-5" />
+                <Button variant="ghost" size="icon" className="text-slate-500 hover:bg-slate-100 rounded-full hidden sm:flex" aria-label="Help">
+                    <HelpCircle className="size-5" aria-hidden="true" />
                 </Button>
             </div>
         </header>

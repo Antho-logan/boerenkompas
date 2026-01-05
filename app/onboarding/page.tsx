@@ -13,6 +13,7 @@ import { createClient, isSupabaseConfigured } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Leaf, Building2, ArrowRight, AlertCircle, Loader2, AlertTriangle } from 'lucide-react';
 
 export default function OnboardingPage() {
@@ -124,10 +125,25 @@ export default function OnboardingPage() {
     if (isCheckingAuth) {
         return (
             <div className="min-h-screen bg-gradient-to-br from-slate-50 to-emerald-50 flex items-center justify-center p-4">
-                <div className="flex items-center gap-3 text-slate-500">
-                    <Loader2 className="size-6 animate-spin" />
-                    <span>Laden...</span>
-                </div>
+                <Card className="w-full max-w-lg shadow-xl border-slate-200">
+                    <CardContent className="p-8 space-y-6">
+                        <div className="flex items-center gap-3">
+                            <Skeleton className="size-12 rounded-xl" />
+                            <div className="space-y-2">
+                                <Skeleton className="h-4 w-40" />
+                                <Skeleton className="h-3 w-24" />
+                            </div>
+                        </div>
+                        <div className="space-y-3">
+                            <Skeleton className="h-10 w-full" />
+                            <Skeleton className="h-10 w-full" />
+                        </div>
+                        <div className="flex justify-end">
+                            <Skeleton className="h-10 w-28" />
+                        </div>
+                        <span className="sr-only">Laden...</span>
+                    </CardContent>
+                </Card>
             </div>
         );
     }

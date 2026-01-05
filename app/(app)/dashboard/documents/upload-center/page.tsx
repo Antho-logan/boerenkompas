@@ -12,7 +12,6 @@ import {
     Trash2,
     ExternalLink,
     AlertCircle,
-    FileSearch,
     Lock,
     Pencil,
     Loader2,
@@ -20,6 +19,7 @@ import {
     Clock,
     Link2,
     FlaskConical,
+    Search,
 } from "lucide-react"
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -158,6 +158,11 @@ export default function UploadCenterPage() {
     const [errorToast, setErrorToast] = useState<string | null>(null)
     const [successToast, setSuccessToast] = useState<string | null>(null)
     const [downloadingId, setDownloadingId] = useState<string | null>(null)
+    
+    // Filtering state for recent uploads
+    const [searchTerm, setSearchTerm] = useState("")
+    const [selectedCategory, setSelectedCategory] = useState<DocCategory | "">("")
+    const [sortOrder, setSortOrder] = useState<"newest" | "oldest">("newest")
     const toastTimeoutRef = useRef<number | null>(null)
     const successTimeoutRef = useRef<number | null>(null)
 
@@ -177,12 +182,37 @@ export default function UploadCenterPage() {
     const [isDragging, setIsDragging] = useState(false)
     const fileInputRef = useRef<HTMLInputElement | null>(null)
 
+    // Create refs for category cards to enable scrolling and highlighting
+    const categoryRefs = useRef<Record<DocCategory, HTMLElement | null>>({} as Record<DocCategory, HTMLElement | null>)
+    const [highlightedCategory, setHighlightedCategory] = useState<DocCategory | null>(null)
+
     // Update category when query param changes
     useEffect(() => {
         if (prefilledCategory && UPLOAD_CATEGORIES.some(c => c.value === prefilledCategory)) {
             setCategory(prefilledCategory)
         }
     }, [prefilledCategory])
+    // Scroll to and highlight prefilled category section
+    useEffect(() => {
+        if (prefilledCategory && categoryRefs.current[prefilledCategory]) {
+            const element = categoryRefs.current[prefilledCategory]
+            if (element) {
+                // Scroll the element into view with smooth behavior
+                element.scrollIntoView({ behavior: 'smooth', block: 'center' })
+                
+                // Set highlighted state to trigger CSS animation
+                setHighlightedCategory(prefilledCategory)
+                
+                // Remove highlight after 3 seconds
+                const timeoutId = setTimeout(() => {
+                    setHighlightedCategory(null)
+                }, 3000)
+                
+                return () => clearTimeout(timeoutId)
+            }
+        }
+    }, [prefilledCategory])
+
 
     // Rename dialog state
     const [renameOpen, setRenameOpen] = useState(false)
@@ -561,7 +591,14 @@ export default function UploadCenterPage() {
                     <h2 className="text-lg font-bold text-slate-800 px-1">Wat je hier uploadt (en waarom)</h2>
                     <div className="grid gap-4">
                         {UPLOAD_CATEGORIES.map((cat) => (
-                            <Card key={cat.value} className="group hover:border-emerald-200 transition-colors">
+                            <Card 
+                            key={cat.value} 
+                            ref={(el) => { categoryRefs.current[cat.value] = el }}
+                            className={cn(
+                                "group hover:border-emerald-200 transition-all",
+                                highlightedCategory === cat.value && "ring-2 ring-emerald-500 ring-offset-2 animate-pulse"
+                            )}
+                        >
                                 <CardHeader className="py-4 px-5">
                                     <CardTitle className="text-base text-slate-900">{cat.title}</CardTitle>
                                 </CardHeader>
@@ -822,17 +859,87 @@ export default function UploadCenterPage() {
 
                     {/* Recent Uploads List */}
                     <div className="space-y-4">
-                        <h2 className="text-lg font-bold text-slate-800 flex items-center justify-between">
-                            Recente uploads
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                            <h2 className="text-lg font-bold text-slate-800">
+                                Recente uploads
+                            </h2>
                             <Button
                                 variant="ghost"
                                 size="sm"
                                 className="text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50"
-                                onClick={() => router.push("/dashboard/documents")}
+                                onClick={() => {
+                                    const params = new URLSearchParams()
+                                    if (searchTerm) params.set("q", searchTerm)
+                                    if (selectedCategory) params.set("category", selectedCategory)
+                                    if (sortOrder) params.set("sort", sortOrder)
+                                    router.push(`/dashboard/documents${params.toString() ? `?${params.toString()}` : ""}`)
+                                }}
                             >
-                                Alles bekijken <ExternalLink size={14} className="ml-1.5" />
+                                Alles bekijken <ExternalLink size={14} className="ml-1.5" aria-hidden="true" />
                             </Button>
-                        </h2>
+                        </div>
+                        
+                        {/* Filter Controls */}
+                        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 bg-slate-50/50 dark:bg-slate-800/30 rounded-lg p-3">
+                            {/* Search */}
+                            <div className="flex-1 min-w-0">
+                                <div className="relative">
+                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-slate-400" aria-hidden="true" />
+                                    <Input
+                                        type="text"
+                                        placeholder="Zoek op bestandsnaam..."
+                                        value={searchTerm}
+                                        onChange={(e) => setSearchTerm(e.target.value)}
+                                        className="pl-9 h-9 text-sm"
+                                    />
+                                </div>
+                            </div>
+                            
+                            {/* Category Filter */}
+                            <div className="sm:w-48">
+                                <Select value={selectedCategory} onValueChange={(val) => setSelectedCategory(val as DocCategory | "")}>
+                                    <SelectTrigger className="h-9 text-sm">
+                                        <SelectValue>{selectedCategory || "Alle categorieën"}</SelectValue>
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="">Alle categorieën</SelectItem>
+                                        {UPLOAD_CATEGORIES.map((cat) => (
+                                            <SelectItem key={cat.value} value={cat.value}>{cat.title}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            
+                            {/* Sort Toggle */}
+                            <div className="sm:w-40">
+                                <Select value={sortOrder} onValueChange={(val) => setSortOrder(val as "newest" | "oldest")}>
+                                    <SelectTrigger className="h-9 text-sm">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="newest">Nieuwste eerst</SelectItem>
+                                        <SelectItem value="oldest">Oudste eerst</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            
+                            {/* Clear Filters */}
+                            {(searchTerm || selectedCategory || sortOrder !== "newest") && (
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => {
+                                        setSearchTerm("")
+                                        setSelectedCategory("")
+                                        setSortOrder("newest")
+                                    }}
+                                    className="text-slate-500 hover:text-slate-700 h-9 px-3"
+                                >
+                                    <X size={14} className="mr-1" aria-hidden="true" />
+                                    Wissen
+                                </Button>
+                            )}
+                        </div>
 
                         <div className="space-y-3">
                             {loading ? (

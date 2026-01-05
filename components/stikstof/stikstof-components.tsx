@@ -239,7 +239,7 @@ export function ParcelImpactPanel({ parcels }: { parcels: ParcelImpact[] }) {
                                 </td>
                                 <td className="px-6 py-4">
                                     <span className={cn("flex items-center gap-1 tabular-nums", p.trendPct > 0 ? "text-amber-600 dark:text-amber-400" : "text-emerald-600 dark:text-emerald-400")}>
-                                        {p.trendPct > 0 ? <TrendingUp size={14} /> : <ArrowDownRight size={14} />}
+                                        {p.trendPct > 0 ? <TrendingUp size={14} aria-hidden="true" /> : <ArrowDownRight size={14} aria-hidden="true" />}
                                         {Math.abs(p.trendPct)}%
                                     </span>
                                 </td>
@@ -253,8 +253,14 @@ export function ParcelImpactPanel({ parcels }: { parcels: ParcelImpact[] }) {
                                     </Badge>
                                 </td>
                                 <td className="px-6 py-4 text-right">
-                                    <Button size="icon" variant="ghost" className="opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <MoreVertical size={16} className="text-slate-400" />
+                                    <Button
+                                        size="icon"
+                                        variant="ghost"
+                                        className="opacity-0 group-hover:opacity-100 transition-opacity"
+                                        aria-label="Meer opties (binnenkort)"
+                                        disabled
+                                    >
+                                        <MoreVertical size={16} className="text-slate-400" aria-hidden="true" />
                                     </Button>
                                 </td>
                             </tr>

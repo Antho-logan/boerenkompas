@@ -173,8 +173,14 @@ export default function StikstofPage() {
                                         </div>
                                     </div>
                                     <DisabledCta reason="Downloads komen binnenkort">
-                                        <Button variant="ghost" size="icon" className="text-slate-400 dark:text-slate-500">
-                                            <Download size={16} />
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            className="text-slate-400 dark:text-slate-500"
+                                            aria-label="Download document (binnenkort)"
+                                            disabled
+                                        >
+                                            <Download size={16} aria-hidden="true" />
                                         </Button>
                                     </DisabledCta>
                                 </div>

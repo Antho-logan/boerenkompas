@@ -121,7 +121,7 @@ export function DashboardSidebar({ isOpen, onClose }: { isOpen: boolean, onClose
                             <DropdownMenuItem>Bedrijfsgegevens</DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem className="text-red-600">
-                                <Link href="/" className="flex w-full items-center"><LogOut className="mr-2 size-4" /> Uitloggen</Link>
+                                <Link href="/" className="flex w-full items-center"><LogOut className="mr-2 size-4" aria-hidden="true" /> Uitloggen</Link>
                             </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
@@ -135,21 +135,22 @@ export function DashboardHeader({ onOpenMobile }: { onOpenMobile: () => void }) 
     return (
         <header className="sticky top-0 z-30 h-16 bg-white/80 backdrop-blur-xl border-b border-slate-200 flex items-center px-4 sm:px-6 justify-between">
             <div className="flex items-center gap-4 flex-1">
-                <button onClick={onOpenMobile} className="lg:hidden p-2 -ml-2 text-slate-500 hover:bg-slate-100 rounded-md">
-                    <Menu size={20} />
+                <button onClick={onOpenMobile} className="lg:hidden p-2 -ml-2 text-slate-500 hover:bg-slate-100 rounded-md" aria-label="Open menu">
+                    <Menu size={20} aria-hidden="true" />
                 </button>
                 <div className="relative max-w-md w-full hidden sm:block">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-slate-400" />
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-slate-400" aria-hidden="true" />
                     <Input
                         className="pl-9 bg-slate-50/50 border-transparent focus:bg-white focus:border-slate-200 transition-all rounded-xl h-10"
                         placeholder="Zoek in dossiers, percelen..."
+                        aria-label="Zoek in dossiers, percelen"
                     />
                 </div>
             </div>
             <div className="flex items-center gap-2">
-                <Button variant="ghost" size="icon" className="text-slate-500 hover:bg-slate-100 rounded-full relative">
-                    <Bell size={20} />
-                    <span className="absolute top-2.5 right-2.5 size-2 bg-red-500 rounded-full ring-2 ring-white"></span>
+                <Button variant="ghost" size="icon" className="text-slate-500 hover:bg-slate-100 rounded-full relative" aria-label="Notificaties">
+                    <Bell size={20} aria-hidden="true" />
+                    <span className="absolute top-2.5 right-2.5 size-2 bg-red-500 rounded-full ring-2 ring-white" aria-hidden="true"></span>
                 </Button>
             </div>
         </header>

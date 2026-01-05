@@ -5,6 +5,16 @@
 
 import { NextResponse } from 'next/server';
 import { getDocuments, getDocumentsStats } from '@/lib/supabase/actions/documents';
+import type { Document } from '@/lib/supabase/types';
+
+const sanitizeDocument = (doc: Document) => {
+    const safe = { ...doc } as Record<string, unknown>;
+    delete safe.storage_key;
+    delete safe.tenant_id;
+    delete safe.created_by;
+    delete safe.updated_by;
+    return safe as Omit<Document, "storage_key" | "tenant_id" | "created_by" | "updated_by">;
+};
 
 export async function GET() {
     try {
@@ -14,7 +24,7 @@ export async function GET() {
         ]);
 
         return NextResponse.json({
-            documents,
+            documents: documents.map(sanitizeDocument),
             stats,
         });
     } catch (error) {

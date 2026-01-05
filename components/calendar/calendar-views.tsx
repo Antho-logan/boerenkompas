@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { DisabledCta } from "@/components/ui/preview-badge"
 import { cn } from "@/lib/utils"
 // Utils
 import { MONTHS_NL, SHORT_DAYS_NL, getMonthGrid, isSameDay, isToday } from "./calendar-utils"
@@ -15,13 +16,15 @@ import { CalendarItem, CalendarViewType } from "@/lib/calendar/types"
 export function CalendarControlBar({
     view, setView,
     currentDate, setCurrentDate,
-    onNewItem
+    onNewItem,
+    newItemDisabledReason = "Agenda-items aanmaken komt binnenkort."
 }: {
     view: CalendarViewType,
     setView: (v: CalendarViewType) => void,
     currentDate: Date,
     setCurrentDate: (d: Date) => void,
-    onNewItem: () => void
+    onNewItem?: () => void
+    newItemDisabledReason?: string
 }) {
     const nextMonth = () => {
         const d = new Date(currentDate)
@@ -46,23 +49,35 @@ export function CalendarControlBar({
                 </div>
                 <div className="h-6 w-px bg-slate-200 hidden sm:block"></div>
                 <div className="flex items-center gap-2">
-                    <Button variant="ghost" size="icon" onClick={prevMonth} className="size-8"><ChevronLeft size={16} /></Button>
+                    <Button variant="ghost" size="icon" onClick={prevMonth} className="size-8" aria-label="Vorige maand">
+                        <ChevronLeft size={16} aria-hidden="true" />
+                    </Button>
                     <span className="font-bold text-slate-900 w-32 text-center select-none">
                         {MONTHS_NL[currentDate.getMonth()]} {currentDate.getFullYear()}
                     </span>
-                    <Button variant="ghost" size="icon" onClick={nextMonth} className="size-8"><ChevronRight size={16} /></Button>
+                    <Button variant="ghost" size="icon" onClick={nextMonth} className="size-8" aria-label="Volgende maand">
+                        <ChevronRight size={16} aria-hidden="true" />
+                    </Button>
                     <Button variant="link" onClick={goToday} className="text-xs text-emerald-600">Vandaag</Button>
                 </div>
             </div>
 
             <div className="flex items-center gap-3 w-full xl:w-auto">
                 <div className="relative flex-1 xl:w-64">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-slate-400" />
-                    <Input placeholder="Zoek in kalender..." className="pl-9 h-9 text-sm bg-slate-50" />
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-slate-400" aria-hidden="true" />
+                    <Input placeholder="Zoek in kalender..." className="pl-9 h-9 text-sm bg-slate-50" aria-label="Zoek in kalender" />
                 </div>
-                <Button onClick={onNewItem} size="sm" className="bg-slate-900 text-white hover:bg-slate-800 shadow-md">
-                    <Plus size={16} className="mr-2" /> Nieuw
-                </Button>
+                {onNewItem ? (
+                    <Button onClick={onNewItem} size="sm" className="bg-slate-900 text-white hover:bg-slate-800 shadow-md">
+                        <Plus size={16} className="mr-2" aria-hidden="true" /> Nieuw
+                    </Button>
+                ) : (
+                    <DisabledCta reason={newItemDisabledReason}>
+                        <Button size="sm" className="bg-slate-900 text-white shadow-md" disabled>
+                            <Plus size={16} className="mr-2" aria-hidden="true" /> Binnenkort
+                        </Button>
+                    </DisabledCta>
+                )}
             </div>
         </div>
     )

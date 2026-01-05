@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Card } from "@/components/ui/card"
+import { DisabledCta } from "@/components/ui/preview-badge"
 import { DocumentItem, DOC_CATEGORIES } from "@/lib/documents/types"
 import { SlideOver } from "@/components/calendar/calendar-overlays"
 
@@ -102,7 +103,7 @@ export function FileIcon({ type }: { type: DocumentItem['docType'] }) {
     if (type === 'XLS') return <div className="size-8 rounded bg-green-100/80 text-green-600 flex items-center justify-center font-bold text-[10px] border border-green-200">XLS</div>
     if (type === 'IMAGE') return <div className="size-8 rounded bg-purple-100/80 text-purple-600 flex items-center justify-center font-bold text-[10px] border border-purple-200">IMG</div>
     if (type === 'DOC') return <div className="size-8 rounded bg-blue-100/80 text-blue-600 flex items-center justify-center font-bold text-[10px] border border-blue-200">DOC</div>
-    return <div className="size-8 rounded bg-slate-100 text-slate-500 flex items-center justify-center border border-slate-200"><FileText size={14} /></div>
+    return <div className="size-8 rounded bg-slate-100 text-slate-500 flex items-center justify-center border border-slate-200"><FileText size={14} aria-hidden="true" /></div>
 }
 
 // --- Stats Type ---
@@ -146,7 +147,7 @@ export function DocumentsStats({ docs, stats }: { docs: DocumentItem[]; stats?: 
             <Card className="p-4 border-slate-200 shadow-sm bg-slate-50/50">
                 <div className="flex items-center justify-between">
                     <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">Opslag</p>
-                    <HardDrive size={14} className="text-slate-400" />
+                    <HardDrive size={14} className="text-slate-400" aria-hidden="true" />
                 </div>
                 <div className="text-2xl font-bold text-slate-900 mt-1">
                     {storageValue} <span className="text-sm font-medium text-slate-400">{storageUnit}</span>
@@ -160,7 +161,7 @@ export function DocumentsFilterBar({ search, setSearch, onUpload }: { search: st
     return (
         <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between bg-white p-2 rounded-xl border border-slate-200 shadow-sm animate-fade-in-up delay-100">
             <div className="relative flex-1 w-full sm:max-w-md">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-slate-400" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-slate-400" aria-hidden="true" />
                 <Input
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
@@ -170,10 +171,10 @@ export function DocumentsFilterBar({ search, setSearch, onUpload }: { search: st
             </div>
             <div className="flex items-center gap-2 w-full sm:w-auto">
                 <Button variant="outline" size="sm" className="h-10 border-slate-200 text-slate-600 gap-2">
-                    <Filter size={16} /> Filter
+                    <Filter size={16} aria-hidden="true" /> Filter
                 </Button>
                 <Button onClick={onUpload} size="sm" className="h-10 bg-slate-900 text-white hover:bg-slate-800 shadow-md gap-2 flex-1 sm:flex-none">
-                    <Plus size={16} /> Upload
+                    <Plus size={16} aria-hidden="true" /> Upload
                 </Button>
             </div>
         </div>
@@ -219,9 +220,9 @@ function DownloadButton({
                 disabled={downloading}
             >
                 {downloading ? (
-                    <Loader2 className="mr-2 size-4 animate-spin" />
+                    <Loader2 className="mr-2 size-4 animate-spin" aria-hidden="true" />
                 ) : (
-                    <Download className="mr-2 size-4" />
+                    <Download className="mr-2 size-4" aria-hidden="true" />
                 )}
                 {downloading ? 'Laden...' : 'Download'}
             </Button>
@@ -238,9 +239,9 @@ function DownloadButton({
             aria-label="Download document"
         >
             {downloading ? (
-                <Loader2 size={16} className="animate-spin" />
+                <Loader2 size={16} className="animate-spin" aria-hidden="true" />
             ) : (
-                <Download size={16} />
+                <Download size={16} aria-hidden="true" />
             )}
         </Button>
     );
@@ -258,7 +259,7 @@ export function DocumentsList({
     if (docs.length === 0) {
         return (
             <div className="flex flex-col items-center justify-center h-64 border-2 border-dashed border-slate-200 rounded-xl bg-slate-50/50 text-slate-400">
-                <FolderClosed size={48} className="mb-4 opacity-50" />
+                <FolderClosed size={48} className="mb-4 opacity-50" aria-hidden="true" />
                 <p className="text-sm font-medium">Geen documenten gevonden</p>
             </div>
         )
@@ -277,18 +278,28 @@ export function DocumentsList({
                     <div
                         key={doc.id}
                         onClick={() => onSelect(doc)}
-                        className="grid grid-cols-12 gap-4 p-3 items-center hover:bg-slate-50 transition-colors group cursor-pointer"
+                        onKeyDown={(event) => {
+                            if (event.currentTarget !== event.target) return
+                            if (event.key === "Enter" || event.key === " ") {
+                                event.preventDefault()
+                                onSelect(doc)
+                            }
+                        }}
+                        role="button"
+                        tabIndex={0}
+                        aria-label={`Open document ${doc.title || doc.filename}`}
+                        className="grid grid-cols-12 gap-4 p-3 items-center hover:bg-slate-50 transition-colors group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/40 focus-visible:ring-offset-2"
                     >
                         <div className="col-span-6 md:col-span-6 flex items-center gap-3 min-w-0">
                             <FileIcon type={doc.docType} />
                             <div className="min-w-0">
                                 <div className="font-semibold text-slate-700 text-sm truncate group-hover:text-emerald-700 transition-colors flex items-center gap-2">
-                                    {doc.isPinned && <Pin size={12} className="fill-slate-400 text-slate-400" />}
+                                    {doc.isPinned && <Pin size={12} className="fill-slate-400 text-slate-400" aria-hidden="true" />}
                                     {doc.title}
                                 </div>
                                 <div className="text-[11px] text-slate-400 truncate flex items-center gap-2">
                                     {doc.filename}
-                                    <span className="w-1 h-1 rounded-full bg-slate-300" />
+                                    <span className="w-1 h-1 rounded-full bg-slate-300" aria-hidden="true" />
                                     {new Date(doc.uploadedAt).toLocaleDateString()}
                                 </div>
                             </div>
@@ -303,9 +314,17 @@ export function DocumentsList({
                         </div>
                         <div className="col-span-6 md:col-span-2 flex justify-end items-center gap-1 pr-1">
                             <DownloadButton docId={doc.id} onError={onDownloadError} />
-                            <Button size="icon" variant="ghost" className="h-8 w-8 text-slate-400 hover:text-slate-600">
-                                <MoreVertical size={16} />
-                            </Button>
+                            <DisabledCta reason="Meer opties komen binnenkort">
+                                <Button
+                                    size="icon"
+                                    variant="ghost"
+                                    className="h-8 w-8 text-slate-400 hover:text-slate-600"
+                                    aria-label="Meer opties (binnenkort)"
+                                    disabled
+                                >
+                                    <MoreVertical size={16} aria-hidden="true" />
+                                </Button>
+                            </DisabledCta>
                         </div>
                     </div>
                 ))}
@@ -358,7 +377,7 @@ export function DocumentDetailSheet({
                                 onUpdate({ ...doc, status: 'ok' })
                                 onClose()
                             }}>
-                                <CheckCircle2 className="mr-2 size-4" /> Goedkeuren
+                                <CheckCircle2 className="mr-2 size-4" aria-hidden="true" /> Goedkeuren
                             </Button>
                         )}
                     </div>
@@ -408,7 +427,7 @@ export function UploadDialog({
                     <Input value={title} onChange={e => setTitle(e.target.value)} placeholder="Bijv. Grondmonsters 2025" />
                 </div>
                 <div className="border-2 border-dashed border-slate-200 rounded-xl h-32 flex flex-col items-center justify-center text-slate-400 hover:bg-slate-50 hover:border-slate-300 transition-colors cursor-pointer">
-                    <Plus className="mb-2" />
+                    <Plus className="mb-2" aria-hidden="true" />
                     <span className="text-xs">Sleep bestand hierheen of klik</span>
                 </div>
                 <div className="flex gap-2 justify-end pt-2">

@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback, useMemo } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useTenant } from "@/components/app/TenantProvider"
-import { Can } from "@/components/app/RBAC"
 import DashboardPage from "@/components/app/DashboardPage"
 import { mapApiErrorToMessage, canWrite } from "@/lib/supabase/errors"
 import { downloadDocument } from "@/components/documents/document-components"
@@ -22,7 +21,7 @@ import {
     type VaultFilters,
     type CategoryCount,
 } from "@/components/documents/vault-components"
-import { Lock, AlertCircle, History, ExternalLink } from "lucide-react"
+import { Lock, AlertCircle, History } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 
@@ -48,21 +47,12 @@ function ErrorToast({ message, onDismiss, variant = "warning" }: { message: stri
 // DEFAULT FILTERS
 // ─────────────────────────────────────────────────────────────────
 
-const DEFAULT_FILTERS: VaultFilters = {
-    q: "",
-    category: "",
-    status: "",
-    sort: "newest",
-    expiry: "",
-    linked: "",
-}
-
 // ─────────────────────────────────────────────────────────────────
 // MAIN PAGE COMPONENT
 // ─────────────────────────────────────────────────────────────────
 
 export default function DocumentsVaultPage() {
-    const { tenant, role } = useTenant()
+    const { tenant, role, isLoading: isTenantLoading } = useTenant()
     const router = useRouter()
     const searchParams = useSearchParams()
 
@@ -136,17 +126,24 @@ export default function DocumentsVaultPage() {
     // DATA FETCHING
     // ─────────────────────────────────────────────────────────────
     const fetchDocuments = useCallback(async () => {
-        if (!tenant) return
+        if (!tenant) {
+            setLoading(false)
+            return
+        }
 
         setLoading(true)
         try {
             const response = await fetch("/api/documents")
-            if (response.ok) {
-                const data = await response.json()
-                setDocuments(data.documents || [])
-                if (data.stats) {
-                    setStats(data.stats)
-                }
+            const data = await response.json().catch(() => ({}))
+            if (!response.ok) {
+                showError(mapApiErrorToMessage(response.status, data), "error")
+                setDocuments([])
+                setStats(null)
+                return
+            }
+            setDocuments(data.documents || [])
+            if (data.stats) {
+                setStats(data.stats)
             }
         } catch (err) {
             console.error("Error fetching documents:", err)
@@ -320,6 +317,40 @@ export default function DocumentsVaultPage() {
     // ─────────────────────────────────────────────────────────────
     // RENDER
     // ─────────────────────────────────────────────────────────────
+    if (isTenantLoading) {
+        return (
+            <DashboardPage
+                title="Mijn Documenten"
+                description="Beheer je compliance en administratie op één plek."
+                className="animate-fade-in-up"
+            >
+                <VaultStats
+                    total={0}
+                    attention={0}
+                    expiringSoon={0}
+                    storage={0}
+                    loading
+                />
+                <VaultTableSkeleton />
+            </DashboardPage>
+        )
+    }
+
+    if (!tenant) {
+        return (
+            <DashboardPage
+                title="Mijn Documenten"
+                description="Beheer je compliance en administratie op één plek."
+                className="animate-fade-in-up"
+            >
+                <div className="rounded-xl border border-slate-200 bg-slate-50 p-6 text-slate-600 flex items-center gap-3">
+                    <AlertCircle size={18} aria-hidden="true" />
+                    <span>Selecteer een bedrijf om je documenten te bekijken.</span>
+                </div>
+            </DashboardPage>
+        )
+    }
+
     return (
         <DashboardPage
             title="Mijn Documenten"

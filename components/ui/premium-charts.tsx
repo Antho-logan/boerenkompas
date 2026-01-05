@@ -43,6 +43,7 @@ export function Sparkline({
 }: SparklineProps) {
   const mounted = useMounted()
   const reducedMotion = usePrefersReducedMotion()
+  const gradientId = React.useId().replace(/:/g, "")
 
   if (!data.length) return null
 
@@ -58,7 +59,6 @@ export function Sparkline({
 
   const toneConfig = CHART_TONES[tone]
   const strokeColor = color || toneConfig.cssColor
-  const gradientId = React.useId().replace(/:/g, "")
 
   return (
     <div className={cn("relative overflow-visible", className)} style={{ height }}>
@@ -139,6 +139,7 @@ export function PremiumAreaChart({
   const mounted = useMounted()
   const reducedMotion = usePrefersReducedMotion()
   const [hoverIndex, setHoverIndex] = React.useState<number | null>(null)
+  const gradientId = React.useId().replace(/:/g, "")
 
   if (!data.length) return null
 
@@ -162,7 +163,6 @@ export function PremiumAreaChart({
   const tone2Config = CHART_TONES[tone2]
   const primaryColor = color || toneConfig.cssColor
   const secondaryColor = color2 || tone2Config.cssColor
-  const gradientId = React.useId().replace(/:/g, "")
   const labelEvery = getLabelInterval(labels.length)
 
   return (

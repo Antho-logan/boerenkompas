@@ -203,7 +203,7 @@ export function LedgerPanel({ records, onAddClick }: { records: LedgerRecord[], 
                     </thead>
                     <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                         {records.map(rec => (
-                            <tr key={rec.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors group cursor-pointer">
+                            <tr key={rec.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors group">
                                 <td className="px-6 py-4 font-medium text-slate-900 dark:text-slate-100">
                                     {new Date(rec.date).toLocaleDateString()}
                                 </td>
@@ -224,13 +224,19 @@ export function LedgerPanel({ records, onAddClick }: { records: LedgerRecord[], 
                                     {rec.counterparty || rec.notes || '-'}
                                 </td>
                                 <td className="px-6 py-4">
-                                    {rec.docStatus === 'ok' && <CheckCircle2 size={16} className="text-emerald-500" />}
+                                    {rec.docStatus === 'ok' && <CheckCircle2 size={16} className="text-emerald-500" aria-hidden="true" />}
                                     {rec.docStatus === 'missing' && <Badge variant="destructive" className="text-[10px] h-5">Mist Doc</Badge>}
                                     {rec.docStatus === 'review' && <Badge variant="secondary" className="bg-amber-100 dark:bg-amber-950/50 text-amber-800 dark:text-amber-400 h-5 text-[10px]">Checken</Badge>}
                                 </td>
                                 <td className="px-6 py-4 text-right">
-                                    <Button size="icon" variant="ghost" className="opacity-0 group-hover:opacity-100 transition-opacity text-slate-400 dark:text-slate-500">
-                                        <MoreVertical size={16} />
+                                    <Button
+                                        size="icon"
+                                        variant="ghost"
+                                        className="opacity-0 group-hover:opacity-100 transition-opacity text-slate-400 dark:text-slate-500"
+                                        aria-label="Meer opties (binnenkort)"
+                                        disabled
+                                    >
+                                        <MoreVertical size={16} aria-hidden="true" />
                                     </Button>
                                 </td>
                             </tr>

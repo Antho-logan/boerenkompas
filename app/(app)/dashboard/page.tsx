@@ -36,7 +36,6 @@ export default function DashboardHomePage() {
         if (!tenant?.id) return
 
         let isActive = true
-        setLoadError(null)
 
         Promise.all([
             apiFetch<KPI[]>(`/tenants/${tenant.id}/kpis`),
@@ -44,6 +43,7 @@ export default function DashboardHomePage() {
         ])
             .then(([kpiData, aiData]) => {
                 if (!isActive) return
+                setLoadError(null)
                 setKpis(kpiData)
                 setAiChecks(aiData)
                 setLoadedTenantId(tenant.id)
@@ -168,7 +168,7 @@ export default function DashboardHomePage() {
                                         <Lock size={14} />
                                     </div>
                                     <div className="text-left">
-                                        <div className="text-xs font-bold text-slate-900">Extra KPI's</div>
+                                        <div className="text-xs font-bold text-slate-900">Extra KPI&apos;s</div>
                                         <div className="text-[10px] text-slate-500">Beschikbaar vanaf Pro</div>
                                     </div>
                                 </Link>
