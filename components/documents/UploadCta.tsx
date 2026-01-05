@@ -1,8 +1,9 @@
 "use client"
 
+import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { Upload, FileText, ArrowRight } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { Button, buttonVariants } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Can } from "@/components/app/RBAC"
 import { cn } from "@/lib/utils"
@@ -138,32 +139,44 @@ export function UploadCta({
     // ─────────────────────────────────────────────────────────────
     return (
         <Can roles={["owner", "advisor"]}>
-            <Card 
-                className={cn(
-                    "border-dashed border-2 border-slate-200 hover:border-emerald-300 bg-slate-50/50 hover:bg-emerald-50/30 transition-all cursor-pointer group",
-                    className
-                )}
-                onClick={handleClick}
+            <Link
+                href={getUploadUrl()}
+                className="block rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/60 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+                onKeyDown={(event) => {
+                    if (event.key === " ") {
+                        event.preventDefault()
+                        event.currentTarget.click()
+                    }
+                }}
             >
-                <CardContent className="p-6 flex flex-col items-center text-center">
-                    <div className="size-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mb-4 group-hover:bg-emerald-200 transition-colors">
-                        <Upload size={24} aria-hidden="true" />
-                    </div>
-                    <h3 className="font-bold text-slate-900 mb-1">{displayLabel}</h3>
-                    {showDescription && (
-                        <p className="text-sm text-slate-500 mb-4">
-                            Sleep je documenten hierheen of klik om te uploaden.
-                        </p>
+                <Card
+                    className={cn(
+                        "border-dashed border-2 border-slate-200 hover:border-emerald-300 bg-slate-50/50 hover:bg-emerald-50/30 transition-all cursor-pointer group",
+                        className
                     )}
-                    <Button
-                        size="sm"
-                        className="bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm gap-2"
-                    >
-                        <FileText size={14} aria-hidden="true" />
-                        Naar Uploadcentrum
-                    </Button>
-                </CardContent>
-            </Card>
+                >
+                    <CardContent className="p-6 flex flex-col items-center text-center">
+                        <div className="size-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mb-4 group-hover:bg-emerald-200 transition-colors">
+                            <Upload size={24} aria-hidden="true" />
+                        </div>
+                        <h3 className="font-bold text-slate-900 mb-1">{displayLabel}</h3>
+                        {showDescription && (
+                            <p className="text-sm text-slate-500 mb-4">
+                                Sleep je documenten hierheen of klik om te uploaden.
+                            </p>
+                        )}
+                        <span
+                            className={buttonVariants({
+                                size: "sm",
+                                className: "bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm gap-2",
+                            })}
+                        >
+                            <FileText size={14} aria-hidden="true" />
+                            Naar Uploadcentrum
+                        </span>
+                    </CardContent>
+                </Card>
+            </Link>
         </Can>
     )
 }
@@ -184,48 +197,57 @@ export function QuickUploadCard({
     recentCount?: number
     className?: string 
 }) {
-    const router = useRouter()
-
     return (
         <Can roles={["owner", "advisor"]}>
-            <Card 
-                className={cn(
-                    "bg-gradient-to-br from-emerald-600 to-emerald-700 text-white border-none shadow-lg overflow-hidden relative group cursor-pointer",
-                    className
-                )}
-                onClick={() => router.push("/dashboard/documents/upload-center")}
+            <Link
+                href="/dashboard/documents/upload-center"
+                className="block rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/60 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+                onKeyDown={(event) => {
+                    if (event.key === " ") {
+                        event.preventDefault()
+                        event.currentTarget.click()
+                    }
+                }}
             >
-                {/* Background decoration */}
-                <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2 group-hover:scale-110 transition-transform" aria-hidden="true" />
-                <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2" aria-hidden="true" />
-                
-                <CardContent className="p-6 relative z-10">
-                    <div className="flex items-start justify-between mb-4">
-                        <div className="size-12 rounded-xl bg-white/20 backdrop-blur flex items-center justify-center">
-                            <Upload size={24} aria-hidden="true" />
+                <Card 
+                    className={cn(
+                        "bg-gradient-to-br from-emerald-600 to-emerald-700 text-white border-none shadow-lg overflow-hidden relative group cursor-pointer",
+                        className
+                    )}
+                >
+                    {/* Background decoration */}
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2 group-hover:scale-110 transition-transform" aria-hidden="true" />
+                    <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2" aria-hidden="true" />
+                    
+                    <CardContent className="p-6 relative z-10">
+                        <div className="flex items-start justify-between mb-4">
+                            <div className="size-12 rounded-xl bg-white/20 backdrop-blur flex items-center justify-center">
+                                <Upload size={24} aria-hidden="true" />
+                            </div>
+                            {recentCount > 0 && (
+                                <span className="text-xs font-bold bg-white/20 px-2 py-1 rounded-full">
+                                    {recentCount} recent
+                                </span>
+                            )}
                         </div>
-                        {recentCount > 0 && (
-                            <span className="text-xs font-bold bg-white/20 px-2 py-1 rounded-full">
-                                {recentCount} recent
-                            </span>
-                        )}
-                    </div>
-                    
-                    <h3 className="text-lg font-bold mb-1">Document uploaden</h3>
-                    <p className="text-emerald-100 text-sm mb-4 leading-relaxed">
-                        Upload je mestbonnen, vergunningen en andere documenten. Wij checken automatisch of je dossier compleet is.
-                    </p>
-                    
-                    <Button
-                        size="sm"
-                        className="w-full bg-white text-emerald-700 hover:bg-emerald-50 font-bold shadow-md"
-                    >
-                        <Upload size={16} className="mr-2" aria-hidden="true" />
-                        Naar Uploadcentrum
-                    </Button>
-                </CardContent>
-            </Card>
+                        
+                        <h3 className="text-lg font-bold mb-1">Document uploaden</h3>
+                        <p className="text-emerald-100 text-sm mb-4 leading-relaxed">
+                            Upload je mestbonnen, vergunningen en andere documenten. Wij checken automatisch of je dossier compleet is.
+                        </p>
+                        
+                        <span
+                            className={buttonVariants({
+                                size: "sm",
+                                className: "w-full bg-white text-emerald-700 hover:bg-emerald-50 font-bold shadow-md",
+                            })}
+                        >
+                            <Upload size={16} className="mr-2" aria-hidden="true" />
+                            Naar Uploadcentrum
+                        </span>
+                    </CardContent>
+                </Card>
+            </Link>
         </Can>
     )
 }
-

@@ -37,10 +37,7 @@ const NAV_ITEMS: NavItem[] = [
     { kind: "header", label: 'Documenten' },
     { kind: "link", label: 'Mijn Documenten', href: '/dashboard/documents', icon: FileText },
     { kind: "link", label: 'Uploadcentrum', href: '/dashboard/documents/upload-center', icon: FileText },
-<<<<<<< HEAD
-=======
     { kind: "link", label: 'Activiteit', href: '/dashboard/documents/activity', icon: FileClock },
->>>>>>> b0318de (chore: sync updates)
 
     { kind: "header", label: 'Dossiers' },
     { kind: "link", label: 'Dossier: Stikstof', href: '/dashboard/stikstof', icon: Leaf },
@@ -189,12 +186,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
                         <div className="min-w-0 flex items-center gap-2">
                             <TenantSwitch />
-<<<<<<< HEAD
-                            <PlanPreviewSwitcher realPlan="starter" />
-=======
                             {/* Use real tenant plan from database */}
                             <PlanPreviewSwitcher realPlan={tenant?.plan} />
->>>>>>> b0318de (chore: sync updates)
                         </div>
                     </div>
 

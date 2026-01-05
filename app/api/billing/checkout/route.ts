@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { stripe } from '@/lib/stripe';
+import { getStripe } from '@/lib/stripe';
 import { createServiceSupabaseClient } from '@/lib/supabase/service';
 import { errors, handleApiError, requireAuth } from '@/lib/supabase/guards';
 
@@ -12,6 +12,8 @@ export async function POST(request: NextRequest) {
     try {
         const auth = await requireAuth({ requireRole: 'admin' });
         if (auth instanceof NextResponse) return auth;
+
+        const stripe = getStripe();
 
         let body: CheckoutBody = {};
         try {

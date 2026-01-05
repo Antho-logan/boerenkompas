@@ -6,6 +6,7 @@
  * A polished area/line chart for trend visualization.
  * Features smooth Catmull-Rom curves, optional target line,
  * responsive sizing, and accessible interactions.
+ * Premium Apple/OpenAI-level polish.
  */
 
 import * as React from "react"
@@ -23,7 +24,6 @@ import {
   formatNumber,
   buildSmoothPath,
   getLabelInterval,
-  ChartEmptyState,
   ChartSkeleton,
   ChartTooltip,
 } from "./chart-primitives"
@@ -37,7 +37,6 @@ export type TrendDatum = {
 type Props = {
   data: TrendDatum[]
   height?: number
-  valueLabel?: string
   unit?: string
   showTarget?: boolean
   formatValue?: (n: number) => string
@@ -46,12 +45,13 @@ type Props = {
   tone?: ChartTone
   /** Show loading skeleton */
   loading?: boolean
+  /** Show current value callout on the right */
+  showCurrentValue?: boolean
 }
 
 export function PremiumTrendChart({
   data,
   height = CHART_CONFIG.height.lg,
-  valueLabel = "",
   unit = "",
   showTarget = true,
   formatValue = (n) => formatNumber(Math.round(n)),
@@ -59,14 +59,18 @@ export function PremiumTrendChart({
   className,
   tone = "emerald",
   loading = false,
+  showCurrentValue = false,
 }: Props) {
   const reducedMotion = usePrefersReducedMotion()
   const wrapRef = React.useRef<HTMLDivElement>(null)
   const width = useContainerWidth(wrapRef)
   const mounted = useMounted(50) // Slight delay to ensure path is ready
-
+  const gradientId = React.useId().replace(/:/g, "")
+  
   // Deferred data mount to satisfy "draw in" effect request
   const [displayData, setDisplayData] = React.useState<TrendDatum[]>([])
+  const [hoverIdx, setHoverIdx] = React.useState<number | null>(null)
+  const [mouse, setMouse] = React.useState<{ x: number; y: number } | null>(null)
 
   React.useEffect(() => {
     if (reducedMotion) {
@@ -143,9 +147,6 @@ export function PremiumTrendChart({
 
   const labelEvery = getLabelInterval(data.length)
 
-  const [hoverIdx, setHoverIdx] = React.useState<number | null>(null)
-  const [mouse, setMouse] = React.useState<{ x: number; y: number } | null>(null)
-
   const onLeave = () => {
     setHoverIdx(null)
     setMouse(null)
@@ -176,8 +177,11 @@ export function PremiumTrendChart({
   const hoverX = hoverIdx != null ? xAt(hoverIdx) : null
   const hoverY = hoverIdx != null ? yAt(displayValues[hoverIdx]!) : null
 
-  const gradientId = React.useId().replace(/:/g, "")
   const toneConfig = CHART_TONES[tone]
+
+  // Current value callout
+  const currentValue = data.length > 0 ? data[data.length - 1]!.value : null
+  const currentTarget = data.length > 0 ? data[data.length - 1]!.target : null
 
   // Tooltip rendering
   const tooltip = (() => {
@@ -189,7 +193,12 @@ export function PremiumTrendChart({
     const left = clamp(mouse.x + 20, 10, w - tipW - 10)
     const top = clamp(mouse.y - tipH - 20, 10, h - tipH - 10)
 
-    const tooltipItems = [
+    const tooltipItems: Array<{
+      name: string
+      value: string
+      colorClass?: string
+      color?: string
+    }> = [
       {
         name: "Realisatie",
         value: `${formatValue(d.value)}${unit ? ` ${unit}` : ""}`,
@@ -228,12 +237,12 @@ export function PremiumTrendChart({
         >
           <defs>
             <linearGradient id={`bk-area-${gradientId}`} x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor={toneConfig.cssColor} stopOpacity="0.18" />
-              <stop offset="100%" stopColor={toneConfig.cssColor} stopOpacity="0.02" />
+              <stop offset="0%" stopColor={toneConfig.cssColor} stopOpacity="0.22" />
+              <stop offset="100%" stopColor={toneConfig.cssColor} stopOpacity="0.01" />
             </linearGradient>
           </defs>
 
-          {/* Horizontal grid lines */}
+          {/* Horizontal grid lines - premium subtle styling */}
           {Array.from({ length: 4 }).map((_, i) => {
             const y = pad.t + (innerH * i) / 3
             return (
@@ -245,30 +254,30 @@ export function PremiumTrendChart({
                 y2={y}
                 stroke={CHART_COLORS.grid}
                 strokeWidth={1}
-                className="dark:stroke-slate-800"
+                className="dark:stroke-slate-800/50"
               />
             )
           })}
 
-          {/* Y-axis labels */}
+          {/* Y-axis labels - refined typography */}
           {Array.from({ length: 4 }).map((_, i) => {
             const v = max - ((max - min) * i) / 3
             const y = pad.t + (innerH * i) / 3
             return (
               <text
                 key={i}
-                x={pad.l - 10}
-                y={y + 4}
+                x={pad.l - 12}
+                y={y + 3.5}
                 textAnchor="end"
                 fontSize={CHART_CONFIG.fontSize.tick}
-                className="fill-slate-500 dark:fill-slate-400"
+                className="fill-slate-400 dark:fill-slate-500 font-medium tabular-nums"
               >
                 {formatValue(v)}
               </text>
             )
           })}
 
-          {/* X-axis labels */}
+          {/* X-axis labels - refined typography */}
           {data.map((d, i) => {
             if (i % labelEvery !== 0 && i !== data.length - 1) return null
             const x = xAt(i)
@@ -276,54 +285,91 @@ export function PremiumTrendChart({
               <text
                 key={`${d.label}-${i}`}
                 x={x}
-                y={pad.t + innerH + 18}
+                y={pad.t + innerH + 20}
                 textAnchor="middle"
                 fontSize={CHART_CONFIG.fontSize.tick}
-                className="fill-slate-500 dark:fill-slate-400"
+                className="fill-slate-400 dark:fill-slate-500 font-medium"
               >
                 {d.label}
               </text>
             )
           })}
 
-          {/* Area fill */}
+          {/* Area fill - premium gradient */}
           <path
             d={areaPath}
             fill={`url(#bk-area-${gradientId})`}
             style={{
               opacity: reducedMotion ? 1 : (mounted && displayData.length > 0) ? 1 : 0,
-              transition: reducedMotion ? "none" : `opacity ${CHART_CONFIG.animation.area}ms ease`,
+              transition: reducedMotion ? "none" : `opacity ${CHART_CONFIG.animation.area}ms ease-out`,
             }}
           />
 
-          {/* Target/norm line */}
+          {/* Target/norm line - refined dashed line */}
           {targetPath && (
             <path
               d={targetPath}
               fill="none"
               stroke={CHART_COLORS.muted}
               strokeWidth={1.5}
-              strokeDasharray="5 5"
-              strokeOpacity={0.5}
+              strokeDasharray="4 4"
+              strokeOpacity={0.4}
             />
           )}
 
-          {/* Main data line */}
+          {/* Main data line - premium stroke with rounded caps */}
           <path
             d={linePath}
             fill="none"
             stroke={toneConfig.cssColor}
-            strokeWidth={2.25}
+            strokeWidth={2.5}
             strokeLinecap="round"
             strokeLinejoin="round"
             style={{
               strokeDasharray: dashArray,
               strokeDashoffset: dashOffset,
-              transition: reducedMotion ? "none" : "stroke-dashoffset 2800ms ease-out 150ms",
+              transition: reducedMotion ? "none" : "stroke-dashoffset 3000ms ease-out 200ms",
             }}
           />
 
-          {/* Hover crosshair and dot */}
+          {/* Current value callout on the right */}
+          {showCurrentValue && currentValue !== null && mounted && displayData.length > 0 && (
+            <g>
+              {/* Value text */}
+              <text
+                x={w - 8}
+                y={pad.t + innerH / 2}
+                textAnchor="end"
+                fontSize={14}
+                fontWeight="bold"
+                className="fill-slate-900 dark:fill-slate-100 tabular-nums"
+                style={{
+                  opacity: reducedMotion ? 1 : 0,
+                  transition: reducedMotion ? "none" : "opacity 400ms ease-out 800ms",
+                }}
+              >
+                {formatValue(currentValue)}{unit ? ` ${unit}` : ""}
+              </text>
+              {/* Optional target value below */}
+              {currentTarget !== undefined && currentTarget !== null && (
+                <text
+                  x={w - 8}
+                  y={pad.t + innerH / 2 + 14}
+                  textAnchor="end"
+                  fontSize={10}
+                  className="fill-slate-400 dark:fill-slate-500 font-medium tabular-nums"
+                  style={{
+                    opacity: reducedMotion ? 1 : 0,
+                    transition: reducedMotion ? "none" : "opacity 400ms ease-out 900ms",
+                  }}
+                >
+                  Norm: {formatValue(currentTarget)}{unit ? ` ${unit}` : ""}
+                </text>
+              )}
+            </g>
+          )}
+
+          {/* Hover crosshair and dot - premium styling */}
           {hoverIdx != null && hoverX != null && hoverY != null && displayData.length > 0 && (
             <>
               <line
@@ -333,15 +379,23 @@ export function PremiumTrendChart({
                 y2={pad.t + innerH}
                 stroke={CHART_COLORS.grid}
                 strokeWidth={1}
+                className="opacity-60"
               />
               <circle
                 cx={hoverX}
                 cy={hoverY}
-                r={5}
+                r={5.5}
                 fill="white"
                 stroke={toneConfig.cssColor}
                 strokeWidth={2.5}
                 className="drop-shadow-sm"
+              />
+              {/* Inner dot for extra polish */}
+              <circle
+                cx={hoverX}
+                cy={hoverY}
+                r={2.5}
+                fill={toneConfig.cssColor}
               />
             </>
           )}

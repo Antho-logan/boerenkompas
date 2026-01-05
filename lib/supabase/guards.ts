@@ -170,7 +170,7 @@ export async function requireAuth(options?: GuardOptions): Promise<AuthContext |
         // Handle plan errors
         const planError = handlePlanError(error);
         if (planError) {
-            return NextResponse.json(planError.body, { status: planError.status });
+            return NextResponse.json<ApiError>(planError.body, { status: planError.status });
         }
 
         // Re-throw unknown errors
@@ -286,3 +286,4 @@ export function handleApiError(error: unknown): NextResponse<ApiError> {
 export function isErrorResponse(result: unknown): result is NextResponse<ApiError> {
     return result instanceof NextResponse;
 }
+

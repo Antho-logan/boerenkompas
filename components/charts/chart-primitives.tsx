@@ -5,6 +5,7 @@
  *
  * Provides consistent styling, colors, and components for all charts.
  * Uses Tailwind CSS variables for theming support.
+ * Premium Apple/OpenAI-level polish.
  */
 
 import * as React from "react"
@@ -30,11 +31,11 @@ export const CHART_COLORS = {
   danger: "oklch(0.637 0.237 25.331)",    // red-500
   info: "oklch(0.623 0.214 259.815)",     // blue-500
 
-  // Grid & axis
-  grid: "rgba(15, 23, 42, 0.06)",
-  gridDark: "rgba(248, 250, 252, 0.08)",
-  axis: "rgba(15, 23, 42, 0.55)",
-  axisDark: "rgba(248, 250, 252, 0.55)",
+  // Grid & axis - premium subtle colors
+  grid: "rgba(15, 23, 42, 0.04)",
+  gridDark: "rgba(248, 250, 252, 0.06)",
+  axis: "rgba(15, 23, 42, 0.45)",
+  axisDark: "rgba(248, 250, 252, 0.45)",
 } as const
 
 // Tone presets for charts (Tailwind-compatible class strings)
@@ -83,37 +84,85 @@ export type ChartTone = keyof typeof CHART_TONES
  * ────────────────────────────────────────────────────────────────────────────*/
 
 export const CHART_CONFIG = {
-  // Font sizes (in px)
+  // Font sizes (in px) - refined for premium look
   fontSize: {
-    tick: 11,
+    tick: 10,
     tooltip: 12,
     label: 13,
+    title: 14,
   },
-  // Standard padding for charts
+  // Standard padding for charts - optimized for breathing room
   padding: {
-    l: 44,
+    l: 48,
     r: 16,
     t: 16,
-    b: 28,
+    b: 32,
   },
   // Standard heights
   height: {
-    sm: 160,
+    sm: 180,
     md: 240,
     lg: 300,
     xl: 400,
   },
-  // Animation durations
+  // Animation durations - smooth and refined
   animation: {
-    line: 600,
-    area: 320,
-    bar: 700,
+    line: 800,
+    area: 400,
+    bar: 600,
   },
 } as const
 
 /* ─────────────────────────────────────────────────────────────────────────────
+ * TIME RANGE SELECTOR
+ * Compact pill selector for time range filtering
+ * ────────────────────────────────────────────────────────────────────────────*/
+
+export type TimeRange = "7d" | "30d" | "90d" | "all"
+
+interface TimeRangeSelectorProps {
+  value?: TimeRange
+  onChange?: (value: TimeRange) => void
+  disabled?: boolean
+  className?: string
+}
+
+const TIME_RANGES: { value: TimeRange; label: string }[] = [
+  { value: "7d", label: "7d" },
+  { value: "30d", label: "30d" },
+  { value: "90d", label: "90d" },
+  { value: "all", label: "Alles" },
+]
+
+export function TimeRangeSelector({ value = "30d", onChange, disabled, className }: TimeRangeSelectorProps) {
+  return (
+    <div className={cn("inline-flex items-center gap-0.5", className)}>
+      {TIME_RANGES.map((range) => (
+        <button
+          key={range.value}
+          type="button"
+          onClick={() => onChange?.(range.value)}
+          disabled={disabled}
+          className={cn(
+            "px-2.5 py-1 text-[11px] font-medium rounded-md transition-all duration-200",
+            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-emerald-500/30",
+            value === range.value
+              ? "bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-sm"
+              : "text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800",
+            disabled && "opacity-50 cursor-not-allowed"
+          )}
+          aria-label={`Toon ${range.label}`}
+        >
+          {range.label}
+        </button>
+      ))}
+    </div>
+  )
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
  * CHART CARD WRAPPER
- * Consistent card layout for all chart blocks
+ * Consistent card layout for all chart blocks with premium styling
  * ────────────────────────────────────────────────────────────────────────────*/
 
 interface ChartCardProps {
@@ -122,13 +171,14 @@ interface ChartCardProps {
   children: React.ReactNode
   className?: string
   headerRight?: React.ReactNode
-<<<<<<< HEAD
-=======
   /** Optional badge to show next to title (e.g., PreviewBadge) */
   badge?: React.ReactNode
->>>>>>> b0318de (chore: sync updates)
   /** Controls whether CardContent has padding (default true) */
   padded?: boolean
+  /** Optional time range selector */
+  timeRange?: TimeRange
+  onTimeRangeChange?: (value: TimeRange) => void
+  timeRangeDisabled?: boolean
 }
 
 export function ChartCard({
@@ -137,42 +187,48 @@ export function ChartCard({
   children,
   className,
   headerRight,
-<<<<<<< HEAD
-=======
   badge,
->>>>>>> b0318de (chore: sync updates)
   padded = true,
+  timeRange,
+  onTimeRangeChange,
+  timeRangeDisabled,
 }: ChartCardProps) {
   return (
     <Card className={cn(
-      "border-slate-200/60 dark:border-slate-800 shadow-[0_2px_10px_-3px_rgba(0,0,0,0.07),0_1px_4px_-2px_rgba(0,0,0,0.05)] overflow-hidden rounded-2xl transition-all duration-300 hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)]", 
+      "border-slate-200/80 dark:border-slate-800/80",
+      "shadow-[0_1px_3px_0_rgba(0,0,0,0.04),0_1px_2px_-1px_rgba(0,0,0,0.03)]",
+      "hover:shadow-[0_4px_12px_-2px_rgba(0,0,0,0.06),0_2px_4px_-2px_rgba(0,0,0,0.04)]",
+      "overflow-hidden rounded-2xl transition-all duration-300 ease-out",
       className
     )}>
-      <CardHeader className="pb-4 pt-6 px-6">
-        <div className="flex items-start justify-between gap-4">
-          <div className="space-y-1.5">
-<<<<<<< HEAD
-            <CardTitle className="text-sm font-bold text-slate-900 dark:text-slate-100 tracking-tight uppercase">
-              {title}
-            </CardTitle>
-=======
-            <div className="flex items-center gap-2">
-              <CardTitle className="text-sm font-bold text-slate-900 dark:text-slate-100 tracking-tight uppercase">
+      <CardHeader className="pb-3 pt-5 px-5 sm:px-6">
+        <div className="flex items-start justify-between gap-3">
+          <div className="space-y-1 flex-1 min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <CardTitle className="text-[13px] font-bold text-slate-900 dark:text-slate-100 tracking-tight uppercase leading-tight">
                 {title}
               </CardTitle>
               {badge}
             </div>
->>>>>>> b0318de (chore: sync updates)
             {description && (
-              <CardDescription className="text-xs font-medium text-slate-400 dark:text-slate-500">
+              <CardDescription className="text-[11px] font-medium text-slate-400 dark:text-slate-500 leading-tight">
                 {description}
               </CardDescription>
             )}
           </div>
-          {headerRight}
+          <div className="flex items-center gap-2 shrink-0">
+            {timeRange && (
+              <TimeRangeSelector
+                value={timeRange}
+                onChange={onTimeRangeChange}
+                disabled={timeRangeDisabled}
+              />
+            )}
+            {headerRight}
+          </div>
         </div>
       </CardHeader>
-      <CardContent className={cn(padded ? "px-6 pb-6" : "p-0")}>
+      <CardContent className={cn(padded ? "px-5 sm:px-6 pb-5" : "p-0")}>
         {children}
       </CardContent>
     </Card>
@@ -181,7 +237,7 @@ export function ChartCard({
 
 /* ─────────────────────────────────────────────────────────────────────────────
  * CHART TOOLTIP
- * Consistent tooltip styling for hover states
+ * Consistent tooltip styling for hover states with premium polish
  * ────────────────────────────────────────────────────────────────────────────*/
 
 interface ChartTooltipProps {
@@ -199,27 +255,32 @@ export function ChartTooltip({ label, items, className }: ChartTooltipProps) {
   return (
     <div
       className={cn(
-        "rounded-2xl border border-slate-200/50 dark:border-slate-700/50",
-        "bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl",
-        "shadow-[0_10px_40px_-10px_rgba(0,0,0,0.1)] p-4 text-xs min-w-[160px]",
-        "animate-in fade-in zoom-in-95 duration-200",
+        "rounded-xl border border-slate-200/60 dark:border-slate-700/60",
+        "bg-white/95 dark:bg-slate-900/95 backdrop-blur-md",
+        "shadow-[0_8px_30px_-8px_rgba(0,0,0,0.12),0_2px_8px_-4px_rgba(0,0,0,0.08)]",
+        "px-3.5 py-3 text-[11px] min-w-[140px] max-w-[200px]",
+        "animate-in fade-in zoom-in-95 duration-150 ease-out",
         className
       )}
     >
-      <div className="font-bold text-slate-900 dark:text-slate-100 mb-2 border-b border-slate-100 dark:border-slate-800 pb-1.5">{label}</div>
-      <div className="space-y-2">
+      <div className="font-semibold text-slate-900 dark:text-slate-100 mb-2.5 pb-2 border-b border-slate-100 dark:border-slate-800/50">
+        {label}
+      </div>
+      <div className="space-y-1.5">
         {items.map((item, i) => (
-          <div key={i} className="flex items-center justify-between gap-4">
-            <div className="flex items-center gap-2">
+          <div key={i} className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2 min-w-0">
               {(item.color || item.colorClass) && (
                 <span
-                  className={cn("size-2 rounded-full shrink-0 shadow-sm", item.colorClass)}
+                  className={cn("size-1.5 rounded-full shrink-0", item.colorClass)}
                   style={item.color ? { backgroundColor: item.color } : undefined}
                 />
               )}
-              <span className="text-slate-500 dark:text-slate-400 font-medium">{item.name}</span>
+              <span className="text-slate-500 dark:text-slate-400 font-medium truncate">
+                {item.name}
+              </span>
             </div>
-            <span className="font-bold text-slate-900 dark:text-slate-100 tabular-nums">
+            <span className="font-bold text-slate-900 dark:text-slate-100 tabular-nums shrink-0">
               {item.value}
             </span>
           </div>
@@ -231,7 +292,7 @@ export function ChartTooltip({ label, items, className }: ChartTooltipProps) {
 
 /* ─────────────────────────────────────────────────────────────────────────────
  * CHART LEGEND
- * Consistent legend styling
+ * Consistent legend styling with premium polish
  * ────────────────────────────────────────────────────────────────────────────*/
 
 interface LegendItem {
@@ -251,13 +312,13 @@ export function ChartLegend({ items, className, position = "bottom" }: ChartLege
   return (
     <div
       className={cn(
-        "flex items-center justify-center gap-4 sm:gap-6 flex-wrap",
-        position === "top" ? "mb-4" : "mt-4",
+        "flex items-center justify-center gap-4 sm:gap-5 flex-wrap",
+        position === "top" ? "mb-3" : "mt-3",
         className
       )}
     >
       {items.map((item, i) => (
-        <div key={i} className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400">
+        <div key={i} className="flex items-center gap-2 text-[11px] text-slate-600 dark:text-slate-400">
           <span
             className={cn(
               "w-3 h-[3px] rounded-full shrink-0",
@@ -275,7 +336,7 @@ export function ChartLegend({ items, className, position = "bottom" }: ChartLege
 
 /* ─────────────────────────────────────────────────────────────────────────────
  * CHART EMPTY STATE
- * Display when no data is available
+ * Display when no data is available with premium styling
  * ────────────────────────────────────────────────────────────────────────────*/
 
 interface ChartEmptyStateProps {
@@ -293,19 +354,20 @@ export function ChartEmptyState({
     <div
       className={cn(
         "flex items-center justify-center rounded-xl",
-        "bg-slate-50 dark:bg-slate-800/50 border border-dashed border-slate-200 dark:border-slate-700",
+        "bg-slate-50/50 dark:bg-slate-800/30",
+        "border border-dashed border-slate-200 dark:border-slate-700/50",
         className
       )}
       style={{ height }}
     >
-      <p className="text-sm text-slate-400 dark:text-slate-500">{message}</p>
+      <p className="text-sm text-slate-400 dark:text-slate-500 font-medium">{message}</p>
     </div>
   )
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
  * CHART SKELETON
- * Loading state placeholder
+ * Loading state placeholder with premium animation
  * ────────────────────────────────────────────────────────────────────────────*/
 
 interface ChartSkeletonProps {
@@ -318,7 +380,7 @@ export function ChartSkeleton({ height = 200, className }: ChartSkeletonProps) {
     <div
       className={cn(
         "w-full rounded-xl animate-pulse",
-        "bg-slate-100 dark:bg-slate-800",
+        "bg-gradient-to-br from-slate-100 to-slate-50 dark:from-slate-800/50 dark:to-slate-800/30",
         className
       )}
       style={{ height }}
@@ -435,4 +497,3 @@ export function getLabelInterval(count: number, maxLabels = 8): number {
   if (count <= maxLabels * 3) return 3
   return Math.ceil(count / maxLabels)
 }
-

@@ -396,9 +396,9 @@ export async function removePilotSeedData(
                 // Delete tenant directly
                 const { error, count } = await supabase
                     .from(table)
-                    .delete()
+                    .delete({ count: 'exact' })
                     .eq('id', PILOT_IDS.tenant)
-                    .select('id', { count: 'exact', head: true });
+                    ;
 
                 deleted[table] = count ?? 0;
                 if (error) errors.push(`${table}: ${error.message}`);
@@ -406,9 +406,9 @@ export async function removePilotSeedData(
                 // Delete by tenant_id
                 const { error, count } = await supabase
                     .from(table)
-                    .delete()
+                    .delete({ count: 'exact' })
                     .eq('tenant_id', PILOT_IDS.tenant)
-                    .select('id', { count: 'exact', head: true });
+                    ;
 
                 deleted[table] = count ?? 0;
                 if (error) errors.push(`${table}: ${error.message}`);
@@ -438,4 +438,5 @@ export const EXPECTED_KPIS = {
     missing_items_open: 2, // 2 missing_item source with status=open
     exports_this_month: 2, // Depends on current date
 };
+
 
