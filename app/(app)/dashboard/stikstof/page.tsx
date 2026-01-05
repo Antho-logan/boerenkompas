@@ -4,19 +4,12 @@ import { useState } from "react"
 import { StikstofKpiRow, ActionPanel } from "@/components/stikstof/stikstof-components"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-<<<<<<< HEAD
-import { Download, FileText, Calculator, File } from "lucide-react"
-import { PremiumBarsChart, type BarDatum } from "@/components/charts/PremiumBarsChart"
-import { ChartCard } from "@/components/charts/chart-primitives"
-import DashboardPage from "@/components/app/DashboardPage"
-=======
 import { Download, FileText, Calculator, File, Upload } from "lucide-react"
 import { PremiumBarsChart, type BarDatum } from "@/components/charts/PremiumBarsChart"
 import { ChartCard } from "@/components/charts/chart-primitives"
 import DashboardPage from "@/components/app/DashboardPage"
 import { PreviewBadge, PreviewBanner, DisabledCta } from "@/components/ui/preview-badge"
 import { UploadCta } from "@/components/documents/UploadCta"
->>>>>>> b0318de (chore: sync updates)
 
 // MVP Mock Data - Dossier focused
 const DOSSIER_KPIS = [
@@ -48,17 +41,6 @@ export default function StikstofPage() {
             description="Gebruiksruimte & BEX/Kringloop Documentatie"
             actions={
                 <div className="flex items-center gap-2 text-sm z-30">
-<<<<<<< HEAD
-                    <Button variant="ghost" size="sm" className="text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100">
-                        <FileText className="mr-2 size-4" /> Dossier Index
-                    </Button>
-                    <Button variant="outline" size="sm" className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 shadow-sm text-slate-700 dark:text-slate-300">
-                        <Download className="mr-2 size-4" /> Exporteer Index (v1)
-                    </Button>
-                    <Button size="sm" disabled className="bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 cursor-not-allowed">
-                        <Calculator className="mr-2 size-4" /> Scenario (Binnenkort)
-                    </Button>
-=======
                     <PreviewBadge variant="demo-data" size="md" />
                     <UploadCta 
                         variant="button" 
@@ -76,13 +58,10 @@ export default function StikstofPage() {
                             <Download className="mr-2 size-4" /> Exporteer Index (v1)
                         </Button>
                     </DisabledCta>
->>>>>>> b0318de (chore: sync updates)
                 </div>
             }
             className="animate-fade-in-up"
         >
-<<<<<<< HEAD
-=======
 
             {/* Preview Banner */}
             <PreviewBanner
@@ -90,7 +69,6 @@ export default function StikstofPage() {
                 description="Onderstaande gegevens zijn voorbeelddata. Koppel je RVO-account om je werkelijke dossierstatus te zien."
                 variant="demo-data"
             />
->>>>>>> b0318de (chore: sync updates)
 
             {/* KPIs */}
             <StikstofKpiRow kpis={DOSSIER_KPIS} />
@@ -101,10 +79,7 @@ export default function StikstofPage() {
                 <ChartCard
                     title="Vereisten Dekking"
                     description="Compleetheid van verplichte onderdelen"
-<<<<<<< HEAD
-=======
                     badge={<PreviewBadge variant="demo-data" size="sm" />}
->>>>>>> b0318de (chore: sync updates)
                     className="col-span-1 lg:col-span-2"
                 >
                     <PremiumBarsChart
@@ -146,17 +121,6 @@ export default function StikstofPage() {
                                 92%
                             </div>
                         </div>
-<<<<<<< HEAD
-                        <h3 className="font-bold text-slate-900 dark:text-slate-100">
-                            Bijna Compleet
-                        </h3>
-                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 mb-4">
-                            Je stikstofdossier mist nog 1 analyseverslag.
-                        </p>
-                        <Button variant="outline" className="w-full bg-white dark:bg-slate-900 dark:border-slate-700">
-                            Bekijk Acties
-                        </Button>
-=======
                         <div className="flex items-center gap-2 mb-1">
                             <h3 className="font-bold text-slate-900 dark:text-slate-100">
                                 Bijna Compleet
@@ -171,7 +135,6 @@ export default function StikstofPage() {
                                 Bekijk Acties
                             </Button>
                         </DisabledCta>
->>>>>>> b0318de (chore: sync updates)
                     </CardContent>
                 </Card>
             </div>
@@ -180,14 +143,6 @@ export default function StikstofPage() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <Card className="col-span-1 lg:col-span-2 shadow-sm border-slate-200 dark:border-slate-800">
                     <CardHeader className="pb-0 flex flex-row items-center justify-between">
-<<<<<<< HEAD
-                        <CardTitle className="text-base font-semibold text-slate-900 dark:text-slate-100">
-                            Gekoppelde Documenten
-                        </CardTitle>
-                        <Button variant="ghost" size="sm" className="text-xs text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100">
-                            Alles bekijken
-                        </Button>
-=======
                         <div className="flex items-center gap-2">
                             <CardTitle className="text-base font-semibold text-slate-900 dark:text-slate-100">
                                 Gekoppelde Documenten
@@ -199,7 +154,6 @@ export default function StikstofPage() {
                                 Alles bekijken
                             </Button>
                         </DisabledCta>
->>>>>>> b0318de (chore: sync updates)
                     </CardHeader>
                     <CardContent className="p-0">
                         <div className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -218,17 +172,11 @@ export default function StikstofPage() {
                                             </div>
                                         </div>
                                     </div>
-<<<<<<< HEAD
-                                    <Button variant="ghost" size="icon" className="text-slate-400 dark:text-slate-500">
-                                        <Download size={16} />
-                                    </Button>
-=======
                                     <DisabledCta reason="Downloads komen binnenkort">
                                         <Button variant="ghost" size="icon" className="text-slate-400 dark:text-slate-500">
                                             <Download size={16} />
                                         </Button>
                                     </DisabledCta>
->>>>>>> b0318de (chore: sync updates)
                                 </div>
                             ))}
                         </div>
@@ -242,8 +190,6 @@ export default function StikstofPage() {
                 ]} />
             </div>
         </DashboardPage>
-<<<<<<< HEAD
-=======
     )
 }
 
@@ -295,6 +241,5 @@ function ActionPanelWithPreview({ actions }: { actions: { id: string, title: str
                 ))}
             </CardContent>
         </Card>
->>>>>>> b0318de (chore: sync updates)
     )
 }

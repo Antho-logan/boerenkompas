@@ -3,29 +3,15 @@
 import { useState, useEffect, useCallback } from "react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-<<<<<<< HEAD
-import { FileText, CheckCircle2, Clock, Eye, Trash2, Plus, Loader2, Lock } from "lucide-react"
-=======
 import { Skeleton } from "@/components/ui/skeleton"
 import { 
     FileText, CheckCircle2, Clock, Eye, Trash2, Plus, Loader2, Lock,
     Copy, ExternalLink, AlertTriangle, CreditCard
 } from "lucide-react"
->>>>>>> b0318de (chore: sync updates)
 import { useTenant } from "@/components/app/TenantProvider"
 import { Can } from "@/components/app/RBAC"
 import type { ExportWithDetails, DossierTemplate } from "@/lib/supabase/types"
 import { hasFeature } from "@/lib/plans"
-<<<<<<< HEAD
-import Link from "next/link"
-import { cn } from "@/lib/utils"
-import DashboardPage from "@/components/app/DashboardPage"
-
-export default function ExportsPage() {
-    const { tenant, effectivePlan } = useTenant();
-    const [exports, setExports] = useState<ExportWithDetails[]>([]);
-    
-=======
 import { canWrite } from "@/lib/supabase/errors"
 import Link from "next/link"
 import { cn } from "@/lib/utils"
@@ -106,7 +92,6 @@ export default function ExportsPage() {
     const [exports, setExports] = useState<ExportWithDetails[]>([]);
     
     const isAdmin = canWrite(role);
->>>>>>> b0318de (chore: sync updates)
     const isUnlimited = hasFeature(effectivePlan, 'exports_unlimited')
     const limitValue = hasFeature(effectivePlan, 'exports_monthly_limit')
     const exportLimit = isUnlimited ? Infinity : (typeof limitValue === 'number' ? limitValue : 0)
@@ -120,12 +105,8 @@ export default function ExportsPage() {
     const [templates, setTemplates] = useState<DossierTemplate[]>([]);
     const [loading, setLoading] = useState(true);
     const [generating, setGenerating] = useState<string | null>(null);
-<<<<<<< HEAD
-    const [error, setError] = useState<string | null>(null);
-=======
     const [error, setError] = useState<{ message: string; code?: string } | null>(null);
     const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
->>>>>>> b0318de (chore: sync updates)
 
     // Fetch exports and templates
     const fetchData = useCallback(async () => {
@@ -159,11 +140,7 @@ export default function ExportsPage() {
 
     // Generate new export
     const handleGenerateExport = async (templateId: string) => {
-<<<<<<< HEAD
-        if (isLimitReached) return;
-=======
         if (isLimitReached || !isAdmin) return;
->>>>>>> b0318de (chore: sync updates)
         setGenerating(templateId);
         setError(null);
         try {
@@ -175,23 +152,6 @@ export default function ExportsPage() {
 
             if (response.ok) {
                 await fetchData();
-<<<<<<< HEAD
-            } else if (response.status === 402 || response.status === 403) {
-                const data = await response.json();
-                if (data.code === 'EXPORT_LIMIT_REACHED') {
-                    setError(data.error || 'Je exportlimiet voor deze maand is bereikt.');
-                } else if (data.code === 'PLAN_UPGRADE_REQUIRED') {
-                    setError(`Upgrade naar ${data.requiredPlan || 'Pro'} vereist voor exports.`);
-                } else {
-                    setError('Je hebt geen toegang tot deze functie.');
-                }
-            } else {
-                setError('Er is iets misgegaan. Probeer het opnieuw.');
-            }
-        } catch (err) {
-            console.error('Error generating export:', err);
-            setError('Er is iets misgegaan. Probeer het opnieuw.');
-=======
                 setToast({ message: 'Export succesvol gegenereerd!', type: 'success' });
             } else {
                 const data = await response.json().catch(() => ({}));
@@ -213,7 +173,6 @@ export default function ExportsPage() {
         } catch (err) {
             console.error('Error generating export:', err);
             setError({ message: 'Er is iets misgegaan. Probeer het opnieuw.' });
->>>>>>> b0318de (chore: sync updates)
         } finally {
             setGenerating(null);
         }
@@ -296,11 +255,7 @@ export default function ExportsPage() {
                     <div className="text-xs text-slate-500 font-medium flex items-center gap-2">
                         {isUnlimited ? (
                             <span className="text-emerald-600 font-bold flex items-center gap-1">
-<<<<<<< HEAD
-                                <CheckCircle2 size={12} /> Onbeperkte exports
-=======
                                 <CheckCircle2 size={12} aria-hidden="true" /> Onbeperkte exports
->>>>>>> b0318de (chore: sync updates)
                             </span>
                         ) : (
                             <>
@@ -309,11 +264,7 @@ export default function ExportsPage() {
                         )}
                     </div>
                     {!isUnlimited && (
-<<<<<<< HEAD
-                        <Link href="/pricing">
-=======
                         <Link href="/dashboard/settings/billing">
->>>>>>> b0318de (chore: sync updates)
                             <Button size="sm" variant="outline" className="h-7 text-[10px] uppercase font-bold border-emerald-200 text-emerald-700 bg-emerald-50 hover:bg-emerald-100">
                                 Upgrade
                             </Button>
@@ -323,62 +274,6 @@ export default function ExportsPage() {
             }
             className="animate-fade-in-up"
         >
-<<<<<<< HEAD
-
-            {/* Error Banner */}
-            {error && (
-                <div className="bg-amber-50 border border-amber-200 p-4 rounded-lg flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                        <Lock className="size-5 text-amber-600" />
-                        <span className="text-sm text-amber-800 font-medium">{error}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <Link href="/pricing">
-                            <Button size="sm" variant="outline" className="text-amber-700 border-amber-300 hover:bg-amber-100">
-                                Bekijk plannen
-                            </Button>
-                        </Link>
-                        <button
-                            onClick={() => setError(null)}
-                            className="text-amber-500 hover:text-amber-700 p-1"
-                        >
-                            ×
-                        </button>
-                    </div>
-                </div>
-            )}
-
-            {/* Generate New Export Section */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {templates.map(template => (
-                    <Card key={template.id} className="p-6 border-slate-200 shadow-sm hover:shadow-md transition-all">
-                        <div className="flex items-start justify-between mb-4">
-                            <div className="size-12 bg-slate-50 rounded-xl flex items-center justify-center border border-slate-100">
-                                <FileText size={24} className="text-slate-400" />
-                            </div>
-                            <span className="text-xs text-slate-400">v{template.version}</span>
-                        </div>
-                        <h3 className="font-bold text-slate-900 mb-2">{template.name}</h3>
-                        <p className="text-sm text-slate-500 mb-4">
-                            Genereer een dossier-index voor {template.name.toLowerCase()}.
-                        </p>
-                        <Button
-                            onClick={() => handleGenerateExport(template.id)}
-                            disabled={generating === template.id || isLimitReached}
-                            className={cn(
-                                "w-full",
-                                isLimitReached 
-                                    ? "bg-slate-100 text-slate-400 hover:bg-slate-100 border-dashed border-2 border-slate-200 shadow-none cursor-not-allowed" 
-                                    : "bg-emerald-600 hover:bg-emerald-700 text-white shadow-md"
-                            )}
-                        >
-                            {generating === template.id ? (
-                                <><Loader2 className="mr-2 size-4 animate-spin" /> Genereren...</>
-                            ) : isLimitReached ? (
-                                <><Lock className="mr-2 size-4" /> Limiet bereikt</>
-                            ) : (
-                                <><Plus className="mr-2 size-4" /> Genereer Index</>
-=======
 
             {/* Error Banner with improved UX */}
             {error && (
@@ -416,7 +311,6 @@ export default function ExportsPage() {
                                 error.code === 'EXPORT_LIMIT_REACHED' 
                                     ? "text-amber-500 hover:text-amber-700" 
                                     : "text-red-500 hover:text-red-700"
->>>>>>> b0318de (chore: sync updates)
                             )}
                             aria-label="Foutmelding sluiten"
                         >
@@ -637,11 +531,9 @@ export default function ExportsPage() {
             {/* Disclaimer */}
             <div className="bg-blue-50 border border-blue-100 p-4 rounded-lg text-sm text-blue-900">
                 <strong>Let op:</strong> Gegenereerde exports bevatten een momentopname van uw dossier-status.
-                Deellinks zijn standaard 7 dagen geldig. BoerenKompas is een workflow-tool en
+                Deellinks zijn standaard 30 dagen geldig. BoerenKompas is een workflow-tool en
                 biedt geen juridische garanties.
             </div>
-<<<<<<< HEAD
-=======
 
             {/* Toast notification */}
             {toast && (
@@ -651,7 +543,6 @@ export default function ExportsPage() {
                     onClose={() => setToast(null)} 
                 />
             )}
->>>>>>> b0318de (chore: sync updates)
         </DashboardPage>
     )
 }

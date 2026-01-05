@@ -1,11 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback, useRef } from "react"
-<<<<<<< HEAD
-import { useRouter } from "next/navigation"
-=======
 import { useRouter, useSearchParams } from "next/navigation"
->>>>>>> b0318de (chore: sync updates)
 import {
     Upload,
     FileText,
@@ -19,14 +15,11 @@ import {
     FileSearch,
     Lock,
     Pencil,
-<<<<<<< HEAD
-=======
     Loader2,
     Calendar,
     Clock,
     Link2,
     FlaskConical,
->>>>>>> b0318de (chore: sync updates)
 } from "lucide-react"
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -37,16 +30,11 @@ import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { useTenant } from "@/components/app/TenantProvider"
-<<<<<<< HEAD
-import DashboardPage from "@/components/app/DashboardPage"
-import { DOC_CATEGORIES, DocCategory } from "@/lib/documents/types"
-=======
 import { Can } from "@/components/app/RBAC"
 import DashboardPage from "@/components/app/DashboardPage"
 import { DOC_CATEGORIES, DocCategory } from "@/lib/documents/types"
 import { mapApiErrorToMessage, canWrite } from "@/lib/supabase/errors"
 import { downloadDocument } from "@/components/documents/document-components"
->>>>>>> b0318de (chore: sync updates)
 import type { Document } from "@/lib/supabase/types"
 import { cn } from "@/lib/utils"
 
@@ -160,22 +148,14 @@ const formatDate = (value: string) =>
 // --- Main Component ---
 
 export default function UploadCenterPage() {
-<<<<<<< HEAD
-    const { tenant, effectivePlan } = useTenant()
-    const router = useRouter()
-=======
     const { tenant, effectivePlan, role } = useTenant()
     const router = useRouter()
     const searchParams = useSearchParams()
->>>>>>> b0318de (chore: sync updates)
     const [docs, setDocs] = useState<Document[]>([])
     const [loading, setLoading] = useState(true)
     const [uploading, setUploading] = useState(false)
     const [renaming, setRenaming] = useState(false)
     const [errorToast, setErrorToast] = useState<string | null>(null)
-<<<<<<< HEAD
-    const toastTimeoutRef = useRef<number | null>(null)
-=======
     const [successToast, setSuccessToast] = useState<string | null>(null)
     const [downloadingId, setDownloadingId] = useState<string | null>(null)
     const toastTimeoutRef = useRef<number | null>(null)
@@ -187,23 +167,16 @@ export default function UploadCenterPage() {
     const prefilledCategory = searchParams.get('category') as DocCategory | null
     const requirementId = searchParams.get('requirementId')
     const isGuidedMode = !!requirementId
->>>>>>> b0318de (chore: sync updates)
 
     // Form state
     const [file, setFile] = useState<File | null>(null)
     const [title, setTitle] = useState("")
-<<<<<<< HEAD
-    const [category, setCategory] = useState<DocCategory>(DEFAULT_CATEGORY)
-=======
     const [category, setCategory] = useState<DocCategory>(prefilledCategory || DEFAULT_CATEGORY)
->>>>>>> b0318de (chore: sync updates)
     const [docDate, setDocDate] = useState("")
     const [expiresAt, setExpiresAt] = useState("")
     const [isDragging, setIsDragging] = useState(false)
     const fileInputRef = useRef<HTMLInputElement | null>(null)
 
-<<<<<<< HEAD
-=======
     // Update category when query param changes
     useEffect(() => {
         if (prefilledCategory && UPLOAD_CATEGORIES.some(c => c.value === prefilledCategory)) {
@@ -211,7 +184,6 @@ export default function UploadCenterPage() {
         }
     }, [prefilledCategory])
 
->>>>>>> b0318de (chore: sync updates)
     // Rename dialog state
     const [renameOpen, setRenameOpen] = useState(false)
     const [renameDoc, setRenameDoc] = useState<Document | null>(null)
@@ -224,8 +196,6 @@ export default function UploadCenterPage() {
         }
         toastTimeoutRef.current = window.setTimeout(() => {
             setErrorToast(null)
-<<<<<<< HEAD
-=======
         }, 5000)
     }, [])
 
@@ -236,7 +206,6 @@ export default function UploadCenterPage() {
         }
         successTimeoutRef.current = window.setTimeout(() => {
             setSuccessToast(null)
->>>>>>> b0318de (chore: sync updates)
         }, 4000)
     }, [])
 
@@ -275,15 +244,12 @@ export default function UploadCenterPage() {
 
     const handleUpload = async (event: React.FormEvent) => {
         event.preventDefault()
-<<<<<<< HEAD
-=======
         
         if (!isAdmin) {
             showErrorToast("Je hebt geen rechten (admin vereist).")
             return
         }
         
->>>>>>> b0318de (chore: sync updates)
         if (!file) {
             showErrorToast("Selecteer een bestand om te uploaden.")
             return
@@ -306,18 +272,12 @@ export default function UploadCenterPage() {
             const data = await response.json().catch(() => ({}))
 
             if (!response.ok) {
-<<<<<<< HEAD
-                showErrorToast(data?.error || "Upload mislukt.")
-=======
                 showErrorToast(mapApiErrorToMessage(response.status, data))
->>>>>>> b0318de (chore: sync updates)
                 return
             }
 
             if (data?.document) {
                 setDocs((prev) => [data.document, ...prev].slice(0, 10))
-<<<<<<< HEAD
-=======
 
                 // If in guided mode, also link to requirement
                 if (requirementId && data.document.id) {
@@ -338,16 +298,11 @@ export default function UploadCenterPage() {
                 } else {
                     showSuccessToast('Document succesvol geüpload!')
                 }
->>>>>>> b0318de (chore: sync updates)
             }
 
             setSelectedFile(null)
             setTitle("")
-<<<<<<< HEAD
-            setCategory(DEFAULT_CATEGORY)
-=======
             setCategory(prefilledCategory || DEFAULT_CATEGORY)
->>>>>>> b0318de (chore: sync updates)
             setDocDate("")
             setExpiresAt("")
             if (fileInputRef.current) {
@@ -362,14 +317,11 @@ export default function UploadCenterPage() {
     }
 
     const handleDelete = async (id: string) => {
-<<<<<<< HEAD
-=======
         if (!isAdmin) {
             showErrorToast("Je hebt geen rechten (admin vereist).")
             return
         }
         
->>>>>>> b0318de (chore: sync updates)
         if (!confirm("Weet je zeker dat je dit document wilt verwijderen?")) return
 
         try {
@@ -377,12 +329,8 @@ export default function UploadCenterPage() {
             if (response.ok) {
                 setDocs((prev) => prev.filter((doc) => doc.id !== id))
             } else {
-<<<<<<< HEAD
-                showErrorToast("Verwijderen mislukt.")
-=======
                 const data = await response.json().catch(() => ({}))
                 showErrorToast(mapApiErrorToMessage(response.status, data))
->>>>>>> b0318de (chore: sync updates)
             }
         } catch (error) {
             console.error("Delete error:", error)
@@ -390,13 +338,6 @@ export default function UploadCenterPage() {
         }
     }
 
-<<<<<<< HEAD
-    const handleDownload = (id: string) => {
-        window.open(`/api/documents/${id}/download`, "_blank", "noopener,noreferrer")
-    }
-
-    const openRename = (doc: Document) => {
-=======
     // Safe download with preflight check
     const handleDownload = async (id: string) => {
         if (downloadingId) return; // Prevent concurrent downloads
@@ -417,7 +358,6 @@ export default function UploadCenterPage() {
             showErrorToast("Je hebt geen rechten (admin vereist).")
             return
         }
->>>>>>> b0318de (chore: sync updates)
         setRenameDoc(doc)
         setRenameValue(doc.title)
         setRenameOpen(true)
@@ -430,15 +370,11 @@ export default function UploadCenterPage() {
     }
 
     const handleRename = async () => {
-<<<<<<< HEAD
-        if (!renameDoc) return
-=======
         if (!renameDoc || !isAdmin) {
             showErrorToast("Je hebt geen rechten (admin vereist).")
             return
         }
         
->>>>>>> b0318de (chore: sync updates)
         const nextTitle = renameValue.trim()
         if (!nextTitle) {
             showErrorToast("Naam mag niet leeg zijn.")
@@ -456,11 +392,7 @@ export default function UploadCenterPage() {
             const data = await response.json().catch(() => ({}))
 
             if (!response.ok) {
-<<<<<<< HEAD
-                showErrorToast(data?.error || "Hernoemen mislukt.")
-=======
                 showErrorToast(mapApiErrorToMessage(response.status, data))
->>>>>>> b0318de (chore: sync updates)
                 return
             }
 
@@ -482,13 +414,10 @@ export default function UploadCenterPage() {
     const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
         event.preventDefault()
         setIsDragging(false)
-<<<<<<< HEAD
-=======
         if (!isAdmin) {
             showErrorToast("Je hebt geen rechten (admin vereist).")
             return
         }
->>>>>>> b0318de (chore: sync updates)
         const droppedFile = event.dataTransfer.files?.[0]
         if (droppedFile) {
             setSelectedFile(droppedFile)
@@ -506,8 +435,6 @@ export default function UploadCenterPage() {
 
     const isStarterPlan = effectivePlan === "starter"
 
-<<<<<<< HEAD
-=======
     // DEV ONLY: Seed dummy documents state
     const [seeding, setSeeding] = useState(false)
     const [clearing, setClearing] = useState(false)
@@ -556,7 +483,6 @@ export default function UploadCenterPage() {
         }
     }
 
->>>>>>> b0318de (chore: sync updates)
     return (
         <DashboardPage
             title="Uploadcentrum"
@@ -564,42 +490,6 @@ export default function UploadCenterPage() {
             className="pb-12 animate-in fade-in duration-500"
         >
 
-<<<<<<< HEAD
-            {/* Why This Matters Info Box */}
-            <Card className="bg-emerald-50 border-emerald-100 shadow-none">
-                <CardContent className="pt-6 flex gap-4">
-                    <div className="size-10 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
-                        <Info size={20} />
-                    </div>
-                    <div className="space-y-1">
-                        <h3 className="font-semibold text-emerald-900">Waarom dit belangrijk is</h3>
-                        <p className="text-sm text-emerald-800 leading-relaxed">
-                            Zonder uploads kunnen we geen dossier-check uitvoeren. Uploads worden gebruikt om:
-                        </p>
-                        <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2 mt-3">
-                            <li className="flex items-center gap-2 text-xs font-medium text-emerald-700">
-                                <CheckCircle2 size={14} /> Eisen te matchen
-                            </li>
-                            <li className="flex items-center gap-2 text-xs font-medium text-emerald-700">
-                                <CheckCircle2 size={14} /> Taken te maken
-                            </li>
-                            <li className="flex items-center gap-2 text-xs font-medium text-emerald-700">
-                                <CheckCircle2 size={14} /> Exports te genereren
-                            </li>
-                            <li className="flex items-center gap-2 text-xs font-medium text-emerald-700">
-                                <CheckCircle2 size={14} /> Audit log bij te houden
-                            </li>
-                        </ul>
-                        <div className="mt-4 flex items-center gap-2 pt-3 border-t border-emerald-100">
-                            <Lock size={12} className="text-emerald-600" />
-                            <p className="text-[11px] text-emerald-600 font-medium">
-                                Alleen jouw organisatie kan deze documenten zien (tenant-scoped).
-                            </p>
-                        </div>
-                    </div>
-                </CardContent>
-            </Card>
-=======
             {/* Guided Upload Mode Banner */}
             {isGuidedMode && (
                 <Card className="bg-blue-50 border-blue-100 shadow-none">
@@ -664,7 +554,6 @@ export default function UploadCenterPage() {
                     </CardContent>
                 </Card>
             )}
->>>>>>> b0318de (chore: sync updates)
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                 {/* LEFT COLUMN: Categories */}
@@ -703,153 +592,6 @@ export default function UploadCenterPage() {
 
                 {/* RIGHT COLUMN: Upload & List */}
                 <div className="lg:col-span-7 space-y-8">
-<<<<<<< HEAD
-                    {/* Upload Card */}
-                    <Card className="border-slate-200 shadow-sm overflow-hidden ring-1 ring-slate-200">
-                        <CardHeader className="bg-slate-50/50 border-b border-slate-100">
-                            <CardTitle className="text-lg">Nieuw Document</CardTitle>
-                            <CardDescription>Selecteer een bestand en vul de details aan.</CardDescription>
-                        </CardHeader>
-                        <CardContent className="pt-6 space-y-6">
-                            <form onSubmit={handleUpload} className="space-y-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="file-input" className="text-slate-700">Bestand</Label>
-                                    <div
-                                        className={cn(
-                                            "border-2 border-dashed rounded-xl p-8 flex flex-col items-center justify-center transition-all cursor-pointer",
-                                            isDragging ? "border-emerald-500 bg-emerald-50/40" : "border-slate-200 hover:border-emerald-400 hover:bg-slate-50",
-                                            uploading && "opacity-70 cursor-not-allowed"
-                                        )}
-                                        onClick={() => fileInputRef.current?.click()}
-                                        onDragOver={handleDragOver}
-                                        onDragLeave={handleDragLeave}
-                                        onDrop={handleDrop}
-                                        role="button"
-                                        tabIndex={0}
-                                        onKeyDown={(event) => {
-                                            if (event.key === "Enter" || event.key === " ") {
-                                                event.preventDefault()
-                                                fileInputRef.current?.click()
-                                            }
-                                        }}
-                                    >
-                                        <input
-                                            ref={fileInputRef}
-                                            id="file-input"
-                                            type="file"
-                                            className="hidden"
-                                            onChange={(event) => setSelectedFile(event.target.files?.[0] || null)}
-                                            accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.webp"
-                                            disabled={uploading}
-                                        />
-                                        {file ? (
-                                            <div className="text-center">
-                                                <div className="size-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto mb-3">
-                                                    <FileText size={24} />
-                                                </div>
-                                                <p className="text-sm font-semibold text-slate-900">{file.name}</p>
-                                                <p className="text-xs text-slate-500 mt-1">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
-                                                <Button
-                                                    type="button"
-                                                    variant="ghost"
-                                                    size="sm"
-                                                    className="mt-2 text-rose-500 hover:text-rose-600 hover:bg-rose-50 h-7"
-                                                    onClick={(event) => {
-                                                        event.stopPropagation()
-                                                        setSelectedFile(null)
-                                                        if (fileInputRef.current) {
-                                                            fileInputRef.current.value = ""
-                                                        }
-                                                    }}
-                                                    disabled={uploading}
-                                                >
-                                                    <X size={14} className="mr-1" /> Verwijder
-                                                </Button>
-                                            </div>
-                                        ) : (
-                                            <div className="text-center">
-                                                <div className="size-12 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto mb-3 group-hover:bg-emerald-100 group-hover:text-emerald-500 transition-colors">
-                                                    <Upload size={24} />
-                                                </div>
-                                                <p className="text-sm font-medium text-slate-900">Sleep hier een bestand heen of klik om te uploaden</p>
-                                                <p className="text-xs text-slate-500 mt-1">PDF, Word, Excel of afbeeldingen (max. 10MB)</p>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div className="space-y-2">
-                                        <Label htmlFor="title">Naam (optioneel)</Label>
-                                        <Input
-                                            id="title"
-                                            placeholder="Bijv. Gecombineerde Opgave 2024"
-                                            value={title}
-                                            onChange={(event) => setTitle(event.target.value)}
-                                            disabled={uploading}
-                                        />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label htmlFor="category">Categorie</Label>
-                                        <Select value={category} onValueChange={(value) => setCategory(value as DocCategory)}>
-                                            <SelectTrigger id="category">
-                                                <SelectValue placeholder="Kies categorie" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                {UPLOAD_CATEGORIES.map((cat) => (
-                                                    <SelectItem key={cat.value} value={cat.value}>{cat.title}</SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-                                </div>
-
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div className="space-y-2">
-                                        <Label htmlFor="doc-date">Documentdatum (optioneel)</Label>
-                                        <Input
-                                            id="doc-date"
-                                            type="date"
-                                            value={docDate}
-                                            onChange={(event) => setDocDate(event.target.value)}
-                                            disabled={uploading}
-                                        />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label htmlFor="expires-at">Vervaldatum (optioneel)</Label>
-                                        <Input
-                                            id="expires-at"
-                                            type="date"
-                                            value={expiresAt}
-                                            onChange={(event) => setExpiresAt(event.target.value)}
-                                            disabled={uploading}
-                                        />
-                                    </div>
-                                </div>
-
-                                <Button
-                                    type="submit"
-                                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-white shadow-md h-12 text-base font-semibold"
-                                    disabled={!file || uploading}
-                                >
-                                    {uploading ? (
-                                        <>
-                                            <span className="animate-spin mr-2 border-2 border-white border-t-transparent rounded-full size-4" />
-                                            Uploaden...
-                                        </>
-                                    ) : (
-                                        <>
-                                            <Upload className="mr-2 size-5" /> Start Upload
-                                        </>
-                                    )}
-                                </Button>
-                            </form>
-                        </CardContent>
-                    </Card>
-
-                    {/* Plan Gating Callout */}
-                    {isStarterPlan && (
-=======
                     {/* DEV ONLY: Test with dummy documents */}
                     {isDev && isAdmin && (
                         <Card className="border-amber-200 bg-amber-50/50">
@@ -1053,7 +795,6 @@ export default function UploadCenterPage() {
 
                     {/* Plan Gating Callout */}
                     {isStarterPlan && isAdmin && (
->>>>>>> b0318de (chore: sync updates)
                         <Card className="bg-slate-900 text-white overflow-hidden relative group border-none">
                             <CardContent className="p-6 flex flex-col md:flex-row gap-6 items-center">
                                 <div className="space-y-2 flex-1 text-center md:text-left">
@@ -1103,17 +844,6 @@ export default function UploadCenterPage() {
                                     ))}
                                 </div>
                             ) : docs.length > 0 ? (
-<<<<<<< HEAD
-                                docs.map((doc) => (
-                                    <Card key={doc.id} className="group hover:shadow-md transition-all border-slate-200">
-                                        <CardContent className="p-4 flex items-center gap-4">
-                                            <div className="size-10 rounded-lg bg-slate-100 text-slate-400 flex items-center justify-center shrink-0 group-hover:bg-emerald-100 group-hover:text-emerald-600 transition-colors">
-                                                <FileText size={20} />
-                                            </div>
-                                            <div className="flex-1 min-w-0">
-                                                <div className="flex items-center gap-2">
-                                                    <h4 className="font-semibold text-slate-900 truncate">{doc.title || doc.file_name}</h4>
-=======
                                 docs.map((doc) => {
                                     // Determine status and missing info
                                     const isExpired = doc.status === 'expired' || (doc.expires_at && new Date(doc.expires_at) < new Date())
@@ -1156,19 +886,10 @@ export default function UploadCenterPage() {
                                                          doc.status === 'needs_review' ? 'Te controleren' :
                                                          doc.status === 'expired' ? 'Verlopen' : doc.status}
                                                     </Badge>
->>>>>>> b0318de (chore: sync updates)
                                                     <Badge variant="outline" className="text-[10px] font-medium h-5 px-1.5 bg-slate-50 text-slate-500 border-slate-200">
                                                         {getCategoryLabel(doc.category)}
                                                     </Badge>
                                                 </div>
-<<<<<<< HEAD
-                                                <div className="flex items-center gap-2 mt-1">
-                                                    <span className="text-xs text-slate-400 truncate">{doc.file_name}</span>
-                                                    <span className="w-1 h-1 rounded-full bg-slate-300 shrink-0" />
-                                                    <span className="text-xs text-slate-400 shrink-0">
-                                                        {formatDate(doc.created_at)}
-                                                    </span>
-=======
                                                 <div className="flex items-center gap-2 mt-1 flex-wrap">
                                                     <span className="text-xs text-slate-400 truncate">{doc.file_name}</span>
                                                     <span className="w-1 h-1 rounded-full bg-slate-300 shrink-0" aria-hidden="true" />
@@ -1191,7 +912,6 @@ export default function UploadCenterPage() {
                                                             )}
                                                         </>
                                                     )}
->>>>>>> b0318de (chore: sync updates)
                                                 </div>
                                             </div>
                                             <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -1199,22 +919,6 @@ export default function UploadCenterPage() {
                                                     variant="ghost"
                                                     size="icon"
                                                     className="size-8 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50"
-<<<<<<< HEAD
-                                                    title="Link naar requirement"
-                                                    onClick={() => router.push("/dashboard/ai/compliance-check")}
-                                                >
-                                                    <FileSearch size={16} />
-                                                </Button>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    className="size-8 text-slate-400 hover:text-slate-600 hover:bg-slate-50"
-                                                    onClick={() => openRename(doc)}
-                                                    title="Hernoem"
-                                                >
-                                                    <Pencil size={16} />
-                                                </Button>
-=======
                                                     title="Koppel aan dossier-eis"
                                                     aria-label="Koppel aan dossier-eis"
                                                     onClick={() => router.push("/dashboard/ai/compliance-check")}
@@ -1234,31 +938,11 @@ export default function UploadCenterPage() {
                                                         <Pencil size={16} aria-hidden="true" />
                                                     </Button>
                                                 </Can>
->>>>>>> b0318de (chore: sync updates)
                                                 <Button
                                                     variant="ghost"
                                                     size="icon"
                                                     className="size-8 text-slate-400 hover:text-slate-600 hover:bg-slate-50"
                                                     onClick={() => handleDownload(doc.id)}
-<<<<<<< HEAD
-                                                    title="Download"
-                                                >
-                                                    <Download size={16} />
-                                                </Button>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    className="size-8 text-slate-400 hover:text-rose-600 hover:bg-rose-50"
-                                                    onClick={() => handleDelete(doc.id)}
-                                                    title="Verwijder"
-                                                >
-                                                    <Trash2 size={16} />
-                                                </Button>
-                                            </div>
-                                        </CardContent>
-                                    </Card>
-                                ))
-=======
                                                     disabled={downloadingId === doc.id}
                                                     title="Download document"
                                                     aria-label="Download document"
@@ -1287,18 +971,13 @@ export default function UploadCenterPage() {
                                     </Card>
                                     )
                                 })
->>>>>>> b0318de (chore: sync updates)
                             ) : (
                                 <div className="text-center py-12 border-2 border-dashed border-slate-200 rounded-xl bg-slate-50/50">
                                     <Upload size={32} className="mx-auto mb-3 text-slate-300" />
                                     <p className="text-slate-500 font-medium">Nog geen documenten geupload</p>
-<<<<<<< HEAD
-                                    <p className="text-xs text-slate-400 mt-1">Begin hierboven met je eerste upload.</p>
-=======
                                     <p className="text-xs text-slate-400 mt-1">
                                         {isAdmin ? 'Begin hierboven met je eerste upload.' : 'Vraag een admin om documenten te uploaden.'}
                                     </p>
->>>>>>> b0318de (chore: sync updates)
                                 </div>
                             )}
                         </div>
@@ -1344,11 +1023,6 @@ export default function UploadCenterPage() {
                 </DialogContent>
             </Dialog>
 
-<<<<<<< HEAD
-            {errorToast && (
-                <div className="fixed bottom-4 right-4 z-50 max-w-sm bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg shadow-lg text-sm">
-                    {errorToast}
-=======
             {/* Success Toast */}
             {successToast && (
                 <div className="fixed bottom-4 right-4 z-50 max-w-sm bg-emerald-50 border border-emerald-200 text-emerald-800 px-4 py-3 rounded-lg shadow-lg text-sm flex items-center gap-2 animate-in slide-in-from-bottom-4">
@@ -1364,7 +1038,6 @@ export default function UploadCenterPage() {
                     <AlertCircle size={16} aria-hidden="true" />
                     <span className="flex-1">{errorToast}</span>
                     <button onClick={() => setErrorToast(null)} className="text-red-600 hover:text-red-800" aria-label="Foutmelding sluiten">×</button>
->>>>>>> b0318de (chore: sync updates)
                 </div>
             )}
         </DashboardPage>

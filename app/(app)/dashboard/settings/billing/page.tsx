@@ -31,7 +31,7 @@ function formatId(value: string | null) {
 export default async function BillingSettingsPage({
     searchParams,
 }: {
-    searchParams?: { success?: string; canceled?: string }
+    searchParams?: Promise<{ success?: string; canceled?: string }>
 }) {
     const tenant = await requireActiveTenant()
     const supabase = await createServerSupabaseClient()
@@ -64,8 +64,9 @@ export default async function BillingSettingsPage({
 
     const statusKey = billing.plan_status || "inactive"
     const statusMeta = statusLabels[statusKey] || statusLabels.inactive
-    const success = searchParams?.success === "1"
-    const canceled = searchParams?.canceled === "1"
+    const resolvedSearchParams = await searchParams
+    const success = resolvedSearchParams?.success === "1"
+    const canceled = resolvedSearchParams?.canceled === "1"
 
     return (
         <DashboardPage

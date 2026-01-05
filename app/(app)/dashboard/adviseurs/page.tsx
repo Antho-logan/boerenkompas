@@ -14,10 +14,7 @@ import Link from "next/link"
 import { isPlanAtLeast, hasFeature } from "@/lib/plans"
 import { LockedFeatureCard } from "@/components/app/LockedFeatureCard"
 import DashboardPage from "@/components/app/DashboardPage"
-<<<<<<< HEAD
-=======
 import { PreviewBadge, PreviewBanner, DisabledCta } from "@/components/ui/preview-badge"
->>>>>>> b0318de (chore: sync updates)
 
 export default function AdvisorsPage() {
     const { effectivePlan } = useTenant()
@@ -40,18 +37,6 @@ export default function AdvisorsPage() {
             description={`Audit Trail Actief • ${canAccessPortal ? "3 gebruikers" : "Beperkt"}`}
             actions={
                 <div className="flex items-center gap-2">
-<<<<<<< HEAD
-                    <Button variant="ghost" size="sm" className="text-slate-500 hover:text-slate-900">
-                        <Shield className="mr-2 size-4" /> Rechten
-                    </Button>
-                    <Button variant="outline" size="sm" className="bg-white border-slate-200 shadow-sm text-slate-700">
-                        <Share2 className="mr-2 size-4" /> Dossier Delen
-                    </Button>
-                    {canAccessPortal ? (
-                        <Button size="sm" className="bg-slate-900 text-white shadow-md hover:bg-slate-800" onClick={() => setIsInviteOpen(true)}>
-                            <UserPlus className="mr-2 size-4" /> Nodig adviseur uit
-                        </Button>
-=======
                     <PreviewBadge variant="preview" size="md" />
                     <DisabledCta reason="Rechtenbeheer komt binnenkort">
                         <Button variant="ghost" size="sm" className="text-slate-500 hover:text-slate-900">
@@ -69,7 +54,6 @@ export default function AdvisorsPage() {
                                 <UserPlus className="mr-2 size-4" /> Nodig adviseur uit
                             </Button>
                         </DisabledCta>
->>>>>>> b0318de (chore: sync updates)
                     ) : (
                         <Link href="/pricing">
                             <Button size="sm" variant="outline" className="border-amber-200 text-amber-700 bg-amber-50 hover:bg-amber-100 font-bold">
@@ -93,54 +77,6 @@ export default function AdvisorsPage() {
                 </div>
             ) : (
                 <>
-<<<<<<< HEAD
-                    {/* Multi-Seats Info for non-teams */}
-                    {!multiSeats && (
-                        <div className="bg-amber-50 border border-amber-100 p-4 rounded-xl flex items-center justify-between gap-4 animate-fade-in-up">
-                            <div className="flex items-center gap-3">
-                                <div className="size-8 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center shrink-0">
-                                    <Users size={16} />
-                                </div>
-                                <div>
-                                    <p className="text-sm font-bold text-amber-900">Meerdere adviseurs uitnodigen?</p>
-                                    <p className="text-xs text-amber-700">Je huidige pakket ondersteunt maximaal 1 actieve adviseur seat.</p>
-                                </div>
-                            </div>
-                            <Link href="/pricing">
-                                <Button size="sm" variant="outline" className="bg-white border-amber-200 text-amber-700 hover:bg-amber-100 h-8">
-                                    Upgrade naar Teams
-                                </Button>
-                            </Link>
-                        </div>
-                    )}
-                    
-                    {/* Teams Seats Counter UI */}
-                    {multiSeats && (
-                        <div className="bg-emerald-50 border border-emerald-100 p-4 rounded-xl flex items-center justify-between gap-4 animate-fade-in-up">
-                            <div className="flex items-center gap-3">
-                                <div className="size-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0">
-                                    <Users size={16} />
-                                </div>
-                                <div>
-                                    <p className="text-sm font-bold text-emerald-900">Teams Licentie Actief</p>
-                                    <p className="text-xs text-emerald-700">Je kunt tot 5 verschillende adviseurs toevoegen aan dit bedrijf.</p>
-                                </div>
-                            </div>
-                            <div className="text-xs font-extrabold text-emerald-700 bg-emerald-100 px-3 py-1 rounded-full border border-emerald-200">
-                                {ADVISORS_MOCK.length} / 5 seats gebruikt
-                            </div>
-                        </div>
-                    )}
-
-                    {/* KPIs */}
-                    <AdvisorsKpiRow
-                        advisorCount={ADVISORS_MOCK.length}
-                        openRequests={REQUESTS_MOCK.filter(r => r.status === 'Open').length}
-                        sharedCount={SHARED_ITEMS_MOCK.length}
-                        auditCount={AUDIT_MOCK.length}
-                    />
-
-=======
                     {/* Preview Banner */}
                     <PreviewBanner
                         title="Preview Modus"
@@ -194,7 +130,6 @@ export default function AdvisorsPage() {
                         auditCount={AUDIT_MOCK.length}
                     />
 
->>>>>>> b0318de (chore: sync updates)
                     {/* Main Layout */}
                     <div className="flex flex-col xl:flex-row gap-6 items-start">
 

@@ -1,6 +1,6 @@
 import Stripe from 'stripe';
 import { NextRequest, NextResponse } from 'next/server';
-import { stripe } from '@/lib/stripe';
+import { getStripe } from '@/lib/stripe';
 import { createServiceSupabaseClient } from '@/lib/supabase/service';
 import { errors, handleApiError } from '@/lib/supabase/guards';
 
@@ -106,7 +106,7 @@ async function updateTenantById(
     return true;
 }
 
-async function resolveTenantIdFromCustomer(customerId: string): Promise<string | null> {
+async function resolveTenantIdFromCustomer(stripe: Stripe, customerId: string): Promise<string | null> {
     try {
         const customer = await stripe.customers.retrieve(customerId);
         if (customer.deleted) return null;
@@ -144,6 +144,8 @@ export async function POST(request: NextRequest) {
         console.error('Missing STRIPE_WEBHOOK_SECRET');
         return errors.internal();
     }
+
+    const stripe = getStripe();
 
     const signature = request.headers.get('stripe-signature');
     if (!signature) {
@@ -186,7 +188,7 @@ export async function POST(request: NextRequest) {
                 let updated = await updateTenantByCustomerId(supabase, customerId, updates);
 
                 if (!updated) {
-                    const tenantId = await resolveTenantIdFromCustomer(customerId);
+                    const tenantId = await resolveTenantIdFromCustomer(stripe, customerId);
                     if (tenantId) {
                         updated = await updateTenantById(supabase, tenantId, updates);
                     }

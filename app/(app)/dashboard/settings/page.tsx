@@ -7,10 +7,6 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-<<<<<<< HEAD
-import { Mail } from "lucide-react"
-import DashboardPage from "@/components/app/DashboardPage"
-=======
 import { Mail, Lock } from "lucide-react"
 import { canWrite } from "@/lib/supabase/errors"
 import DashboardPage from "@/components/app/DashboardPage"
@@ -26,7 +22,6 @@ function ErrorToast({ message, onDismiss }: { message: string; onDismiss: () => 
         </div>
     );
 }
->>>>>>> b0318de (chore: sync updates)
 
 export default function SettingsPage() {
     const { tenant, role } = useTenant();
@@ -155,12 +150,9 @@ export default function SettingsPage() {
                     </div>
                 </CardContent>
             </Card>
-<<<<<<< HEAD
-=======
 
             {/* Error Toast */}
             {error && <ErrorToast message={error} onDismiss={() => setError(null)} />}
->>>>>>> b0318de (chore: sync updates)
         </DashboardPage>
     )
 }

@@ -3,15 +3,11 @@
 import { useEffect, useState } from "react"
 import { apiFetch } from "@/lib/api"
 import { KPI, AICheck } from "@/lib/types"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { ArrowUpRight, ArrowDownRight, Loader2, Sparkles, Lock, Info, Users } from "lucide-react"
 import { EvidenceDrawer } from "@/components/app/EvidenceDrawer"
 import { useTenant } from "@/components/app/TenantProvider"
-<<<<<<< HEAD
-=======
-import { QuickUploadCard } from "@/components/documents/UploadCta"
->>>>>>> b0318de (chore: sync updates)
 import Link from "next/link"
 import { DASHBOARD_DATA } from "@/lib/mock-data"
 import { PremiumTrendChart } from "@/components/charts/PremiumTrendChart"
@@ -21,16 +17,14 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { LockedFeatureCard } from "@/components/app/LockedFeatureCard"
 import { PLAN_LABELS, hasFeature, isPlanAtLeast } from "@/lib/plans"
 import DashboardPage from "@/components/app/DashboardPage"
-<<<<<<< HEAD
-=======
 import { PreviewBadge, PreviewBanner } from "@/components/ui/preview-badge"
->>>>>>> b0318de (chore: sync updates)
 
 export default function DashboardHomePage() {
     const { tenant, effectivePlan, isLoading: isTenantLoading } = useTenant();
     const [kpis, setKpis] = useState<KPI[]>([])
     const [aiChecks, setAiChecks] = useState<AICheck[]>([])
     const [loadedTenantId, setLoadedTenantId] = useState<string | null>(null)
+    const [loadError, setLoadError] = useState<string | null>(null)
     const [selectedCheck, setSelectedCheck] = useState<AICheck | null>(null)
     const [trendMountKey, setTrendMountKey] = useState(0)
 
@@ -41,15 +35,32 @@ export default function DashboardHomePage() {
     useEffect(() => {
         if (!tenant?.id) return
 
+        let isActive = true
+        setLoadError(null)
+
         Promise.all([
             apiFetch<KPI[]>(`/tenants/${tenant.id}/kpis`),
             apiFetch<AICheck[]>(`/tenants/${tenant.id}/ai/checks`)
-        ]).then(([kpiData, aiData]) => {
-            setKpis(kpiData);
-            setAiChecks(aiData);
-            setLoadedTenantId(tenant.id)
-            setTrendMountKey(prev => prev + 1)
-        });
+        ])
+            .then(([kpiData, aiData]) => {
+                if (!isActive) return
+                setKpis(kpiData)
+                setAiChecks(aiData)
+                setLoadedTenantId(tenant.id)
+                setTrendMountKey(prev => prev + 1)
+            })
+            .catch((error) => {
+                console.error('Failed to load dashboard data', error)
+                if (!isActive) return
+                setKpis([])
+                setAiChecks([])
+                setLoadError('Dashboardgegevens konden niet worden geladen. Probeer het zo opnieuw.')
+                setLoadedTenantId(tenant.id)
+            })
+
+        return () => {
+            isActive = false
+        }
 
     }, [tenant?.id]);
 
@@ -80,22 +91,28 @@ export default function DashboardHomePage() {
                     <span className="text-[10px] font-extrabold text-emerald-700 uppercase tracking-wider px-1.5 py-0.5 bg-emerald-50 rounded">
                         {PLAN_LABELS[effectivePlan]}
                     </span>
-                    <Link href="/pricing" className="text-[10px] font-bold text-slate-400 hover:text-emerald-600 transition-colors ml-2 flex items-center gap-1">
+                    <Link href="/pricing" className="text-[10px] font-bold text-slate-400 hover:text-emerald-600 transition-colors ml-2 flex items-center gap-1" aria-label="Bekijk features en prijzen">
                         <Info size={10} /> Features
                     </Link>
                 </div>
             }
             className="animate-fade-in-up"
         >
-<<<<<<< HEAD
-=======
             {/* Demo Data Banner */}
             <PreviewBanner
                 title="Demo Dashboard"
                 description="De KPI's en grafieken tonen voorbeelddata. Koppel je bedrijfsgegevens om realtime inzichten te zien."
                 variant="demo-data"
             />
->>>>>>> b0318de (chore: sync updates)
+
+            {loadError && (
+                <Card className="border-amber-200 bg-amber-50">
+                    <CardHeader>
+                        <CardTitle className="text-amber-900">Dashboard laden mislukt</CardTitle>
+                        <CardDescription className="text-amber-800">{loadError}</CardDescription>
+                    </CardHeader>
+                </Card>
+            )}
 
             {/* KPIs Grid */}
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -114,21 +131,17 @@ export default function DashboardHomePage() {
                         {kpis.slice(0, canSeeAllKPIs ? kpis.length : 2).map((kpi, idx) => (
                             <Card
                                 key={kpi.id}
-                                className="border-slate-200 dark:border-slate-800 shadow-sm hover:border-emerald-200 dark:hover:border-emerald-800 transition-all hover:shadow-md animate-fade-in-up"
+                                className="border-slate-200/80 dark:border-slate-800/80 shadow-[0_1px_3px_0_rgba(0,0,0,0.04),0_1px_2px_-1px_rgba(0,0,0,0.03)] hover:border-emerald-200 dark:hover:border-emerald-800 hover:shadow-[0_4px_12px_-2px_rgba(0,0,0,0.06),0_2px_4px_-2px_rgba(0,0,0,0.04)] transition-all duration-300 ease-out animate-fade-in-up"
                                 style={{ animationDelay: `${idx * 80}ms` }}
                             >
                                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                                     <CardTitle className="text-sm font-medium text-slate-500 dark:text-slate-400">
                                         {kpi.label}
                                     </CardTitle>
-<<<<<<< HEAD
-                                    <div className={`size-2 rounded-full ${kpi.status === 'good' ? 'bg-emerald-500' : 'bg-amber-500'}`} />
-=======
                                     <div className="flex items-center gap-2">
                                         <PreviewBadge variant="demo-data" size="sm" showIcon={false} />
                                         <div className={`size-2 rounded-full ${kpi.status === 'good' ? 'bg-emerald-500' : 'bg-amber-500'}`} />
                                     </div>
->>>>>>> b0318de (chore: sync updates)
                                 </CardHeader>
                                 <CardContent>
                                     <div className="text-2xl font-bold text-slate-900 dark:text-slate-100 tabular-nums">
@@ -165,26 +178,37 @@ export default function DashboardHomePage() {
                 )}
             </div>
 
-<<<<<<< HEAD
-=======
-            {/* Quick Upload Card */}
+            {/* Upload CTA */}
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                <QuickUploadCard className="sm:col-span-2 lg:col-span-1" />
+                <Card className="sm:col-span-2 lg:col-span-1 border-slate-200/80 shadow-[0_1px_3px_0_rgba(0,0,0,0.04),0_1px_2px_-1px_rgba(0,0,0,0.03)]">
+                    <CardHeader>
+                        <CardTitle>Documenten uploaden</CardTitle>
+                        <CardDescription>
+                            Voeg snel nieuwe documenten toe aan je dossier.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent className="text-sm text-slate-500">
+                        Upload je mestbonnen, vergunningen en andere bewijsstukken op één plek.
+                    </CardContent>
+                    <CardFooter className="flex items-center gap-2">
+                        <Link href="/dashboard/documents/upload-center">
+                            <Button>Naar Uploadcentrum</Button>
+                        </Link>
+                        <Link href="/dashboard/documents">
+                            <Button variant="outline">Mijn documenten</Button>
+                        </Link>
+                    </CardFooter>
+                </Card>
             </div>
 
->>>>>>> b0318de (chore: sync updates)
             {/* Charts Row */}
             <div className="grid lg:grid-cols-3 gap-6 lg:gap-8">
                 {/* Stikstof Trend Chart */}
                 <div className="lg:col-span-2">
                     <ChartCard
                         title="Stikstofruimte trend"
-<<<<<<< HEAD
-                        description="Realisatie vs norm (indicatief, mock)"
-=======
                         description="Realisatie vs norm"
                         badge={<PreviewBadge variant="demo-data" size="sm" />}
->>>>>>> b0318de (chore: sync updates)
                         className="h-full relative overflow-hidden"
                     >
                         {!canSeeAllKPIs && (
@@ -203,9 +227,9 @@ export default function DashboardHomePage() {
                                     key={`stikstof-trend-${tenant.id}-${trendMountKey}`}
                                     data={stikstofSeries}
                                     height={300}
-                                    valueLabel="kg"
                                     unit="kg"
                                     showTarget
+                                    showCurrentValue
                                     tone="emerald"
                                     ariaLabel="Stikstofruimte trend grafiek"
                                 />
@@ -225,12 +249,8 @@ export default function DashboardHomePage() {
                     {/* Mest Activity Chart */}
                     <ChartCard
                         title="Mest activiteit"
-<<<<<<< HEAD
-                        description="Laatste weken (mock)"
-=======
                         description="Laatste weken"
                         badge={<PreviewBadge variant="demo-data" size="sm" />}
->>>>>>> b0318de (chore: sync updates)
                     >
                         {loading ? (
                             <ChartSkeleton height={180} />
@@ -241,6 +261,7 @@ export default function DashboardHomePage() {
                                 height={180}
                                 valueLabel="ton"
                                 unit="ton"
+                                showTrack
                                 ariaLabel="Mest activiteit staafgrafiek"
                                 tone="amber"
                             />
@@ -266,7 +287,7 @@ export default function DashboardHomePage() {
                         ) : loading ? (
                             <div className="space-y-3">
                                 {[1, 2, 3].map((i) => (
-                                    <Card key={i} className="border-slate-200 dark:border-slate-800 shadow-sm">
+                                    <Card key={i} className="border-slate-200/80 dark:border-slate-800/80 shadow-[0_1px_3px_0_rgba(0,0,0,0.04),0_1px_2px_-1px_rgba(0,0,0,0.03)]">
                                         <CardContent className="p-4">
                                             <div className="flex items-center justify-between">
                                                 <Skeleton className="h-5 w-16 rounded-full" />
@@ -285,7 +306,7 @@ export default function DashboardHomePage() {
                                 {aiChecks.map(check => (
                                     <div
                                         key={check.id}
-                                        className="group p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-emerald-200 dark:hover:border-emerald-800 rounded-xl shadow-sm transition-all hover:shadow-md"
+                                        className="group p-4 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 hover:border-emerald-200 dark:hover:border-emerald-800 rounded-xl shadow-[0_1px_3px_0_rgba(0,0,0,0.04),0_1px_2px_-1px_rgba(0,0,0,0.03)] hover:shadow-[0_4px_12px_-2px_rgba(0,0,0,0.06),0_2px_4px_-2px_rgba(0,0,0,0.04)] transition-all duration-300 ease-out"
                                     >
                                         <div className="flex items-start justify-between mb-2">
                                             <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${
@@ -329,14 +350,10 @@ export default function DashboardHomePage() {
                                         <Users size={20} />
                                     </div>
                                     <div>
-<<<<<<< HEAD
-                                        <h4 className="font-bold text-white text-sm">Adviseur Inzicht</h4>
-=======
                                         <div className="flex items-center gap-2">
                                             <h4 className="font-bold text-white text-sm">Adviseur Inzicht</h4>
                                             <PreviewBadge variant="demo-data" size="sm" className="border-amber-700" />
                                         </div>
->>>>>>> b0318de (chore: sync updates)
                                         <p className="text-[10px] text-emerald-400 font-bold uppercase tracking-wider">Pakket: {PLAN_LABELS[effectivePlan]}</p>
                                     </div>
                                 </div>

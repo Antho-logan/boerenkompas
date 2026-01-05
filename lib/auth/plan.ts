@@ -112,16 +112,26 @@ export async function assertFeature(tenantId: string, feature: FeatureId): Promi
 /**
  * Check if a thrown error is a PlanUpgradeRequiredError
  */
-export function isPlanError(error: unknown): error is PlanUpgradeRequiredError {
+type PlanError = PlanUpgradeRequiredError | (Error & { code?: string });
+
+export function isPlanError(error: unknown): error is PlanError {
     return error instanceof PlanUpgradeRequiredError ||
-        (error instanceof Error && (error as any).code === 'PLAN_UPGRADE_REQUIRED');
+        (error instanceof Error && (error as { code?: string }).code === 'PLAN_UPGRADE_REQUIRED');
 }
 
 /**
  * Helper to handle plan errors in API routes
  * Returns a consistent error response format
  */
-export function handlePlanError(error: unknown): { status: number; body: object } | null {
+type PlanErrorBody = {
+    error: string;
+    code?: string;
+    currentPlan?: PlanId;
+    requiredPlan?: PlanId;
+    feature?: FeatureId;
+};
+
+export function handlePlanError(error: unknown): { status: number; body: PlanErrorBody } | null {
     if (isPlanError(error)) {
         return {
             status: 403,

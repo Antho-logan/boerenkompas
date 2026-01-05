@@ -17,16 +17,6 @@ import { SlideOver } from "@/components/calendar/calendar-overlays"
 const RECENT_WINDOW_MS = 7 * 24 * 60 * 60 * 1000
 const RECENT_CUTOFF_MS = Date.now() - RECENT_WINDOW_MS
 
-<<<<<<< HEAD
-function openDocumentDownload(docId: string) {
-    const url = `/api/documents/${docId}/download`
-    const newWindow = window.open(url, "_blank", "noopener,noreferrer")
-    if (!newWindow) {
-        window.location.assign(url)
-    }
-}
-
-=======
 /**
  * Format bytes to human-readable string (KB, MB, GB)
  */
@@ -99,7 +89,6 @@ export async function downloadDocument(docId: string): Promise<string | null> {
 
 // --- Helper Components ---
 
->>>>>>> b0318de (chore: sync updates)
 export function StatusBadge({ status }: { status: DocumentItem['status'] }) {
     if (status === 'ok') return <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200">In orde</Badge>
     if (status === 'needs_review') return <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200 animate-pulse">Te controleren</Badge>
@@ -313,22 +302,7 @@ export function DocumentsList({
                             <StatusBadge status={doc.status} />
                         </div>
                         <div className="col-span-6 md:col-span-2 flex justify-end items-center gap-1 pr-1">
-<<<<<<< HEAD
-                            <Button
-                                size="icon"
-                                variant="ghost"
-                                className="h-8 w-8 text-slate-400 hover:text-slate-600"
-                                onClick={(event) => {
-                                    event.stopPropagation()
-                                    openDocumentDownload(doc.id)
-                                }}
-                                aria-label="Download document"
-                            >
-                                <Download size={16} />
-                            </Button>
-=======
                             <DownloadButton docId={doc.id} onError={onDownloadError} />
->>>>>>> b0318de (chore: sync updates)
                             <Button size="icon" variant="ghost" className="h-8 w-8 text-slate-400 hover:text-slate-600">
                                 <MoreVertical size={16} />
                             </Button>
@@ -377,19 +351,9 @@ export function DocumentDetailSheet({
                     </div>
 
                     <div className="space-y-3 pt-4">
-<<<<<<< HEAD
-                        <Button
-                            className="w-full bg-slate-900 text-white hover:bg-slate-800"
-                            onClick={() => openDocumentDownload(doc.id)}
-                        >
-                            <Download className="mr-2 size-4" /> Download
-                        </Button>
-                        {doc.status !== 'ok' && (
-=======
                         <DownloadButton docId={doc.id} onError={onDownloadError} variant="full" />
                         {/* Approve button - only shown if onUpdate is provided (i.e., user is admin) */}
                         {doc.status !== 'ok' && onUpdate && (
->>>>>>> b0318de (chore: sync updates)
                             <Button variant="outline" className="w-full border-emerald-200 text-emerald-700 hover:bg-emerald-50" onClick={() => {
                                 onUpdate({ ...doc, status: 'ok' })
                                 onClose()

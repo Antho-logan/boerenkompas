@@ -10,10 +10,8 @@ import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useTenant } from "@/components/app/TenantProvider"
 import { Can } from "@/components/app/RBAC"
+import { DisabledCta } from "@/components/ui/preview-badge"
 import type { TaskWithRequirement } from "@/lib/supabase/types"
-<<<<<<< HEAD
-import DashboardPage from "@/components/app/DashboardPage"
-=======
 import { mapApiErrorToMessage, canWrite } from "@/lib/supabase/errors"
 import DashboardPage from "@/components/app/DashboardPage"
 
@@ -74,7 +72,6 @@ function SidebarSkeleton() {
         </Card>
     );
 }
->>>>>>> b0318de (chore: sync updates)
 
 // Convert task to calendar item format
 function taskToCalendarItem(task: TaskWithRequirement): CalendarItem {
@@ -254,31 +251,6 @@ export default function CalendarPage() {
     const urgentItems = items.filter(i => i.priority === 'urgent' && i.status !== 'done')
     const upcomingItems = items.filter(i => i.date >= currentDate && i.status !== 'done').slice(0, 5)
 
-<<<<<<< HEAD
-    if (loading) {
-        return (
-            <DashboardPage
-                title="Kalender"
-                description="Plan taken, deadlines en compliance herinneringen op één plek."
-                className="animate-fade-in-up"
-            >
-                <CalendarControlBar
-                    view={view}
-                    setView={setView}
-                    currentDate={currentDate}
-                    setCurrentDate={setCurrentDate}
-                    onNewItem={() => { }}
-                />
-                <div className="h-[600px] flex items-center justify-center text-slate-400">
-                    <Loader2 className="size-8 animate-spin mr-2" />
-                    Kalender laden...
-                </div>
-            </DashboardPage>
-        );
-    }
-
-=======
->>>>>>> b0318de (chore: sync updates)
     return (
         <DashboardPage
             title="Kalender"
@@ -347,9 +319,16 @@ export default function CalendarPage() {
                                 Nieuwe voorwaarden gepubliceerd. Impact op mestplaatsingsruimte verwacht.
                             </p>
                             <Can roles={['owner', 'advisor']}>
-                                <Button size="sm" variant="secondary" className="mt-4 w-full bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border border-emerald-500/20 text-xs h-8">
-                                    Maak agenda-item aan
-                                </Button>
+                                <DisabledCta reason="Agenda-items aanmaken komt binnenkort.">
+                                    <Button
+                                        size="sm"
+                                        variant="secondary"
+                                        className="mt-4 w-full bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border border-emerald-500/20 text-xs h-8"
+                                        disabled
+                                    >
+                                        Binnenkort
+                                    </Button>
+                                </DisabledCta>
                             </Can>
                         </div>
                     </Card>
@@ -367,12 +346,9 @@ export default function CalendarPage() {
                     />
                 )}
             </SlideOver>
-<<<<<<< HEAD
-=======
 
             {/* Error Toast */}
             {error && <ErrorToast message={error} onDismiss={() => setError(null)} />}
->>>>>>> b0318de (chore: sync updates)
         </DashboardPage>
     )
 }

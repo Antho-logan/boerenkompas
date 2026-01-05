@@ -31,8 +31,6 @@ export class ExportLimitError extends Error {
   }
 }
 
-<<<<<<< HEAD
-=======
 /**
  * Map API error responses to user-friendly Dutch messages.
  * Returns a user-facing message based on HTTP status and error code.
@@ -99,4 +97,3 @@ export function isAdminRole(role: string): boolean {
 export function canWrite(role: string): boolean {
   return role === 'owner' || role === 'advisor';
 }
->>>>>>> b0318de (chore: sync updates)

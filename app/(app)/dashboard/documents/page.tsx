@@ -3,14 +3,10 @@
 import { useState, useEffect, useCallback, useMemo } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useTenant } from "@/components/app/TenantProvider"
-<<<<<<< HEAD
-import DashboardPage from "@/components/app/DashboardPage"
-=======
 import { Can } from "@/components/app/RBAC"
 import DashboardPage from "@/components/app/DashboardPage"
 import { mapApiErrorToMessage, canWrite } from "@/lib/supabase/errors"
 import { downloadDocument } from "@/components/documents/document-components"
->>>>>>> b0318de (chore: sync updates)
 import type { Document } from "@/lib/supabase/types"
 import { DOC_CATEGORIES } from "@/lib/documents/types"
 import {
@@ -313,65 +309,12 @@ export default function DocumentsVaultPage() {
         }
     }, [isAdmin, fetchDocuments, showError])
 
-<<<<<<< HEAD
-        setIsUploadOpen(false);
-    }
-
-    const handleUpdate = async (updatedDoc: ReturnType<typeof toDocumentItem>) => {
-        try {
-            const response = await fetch(`/api/documents/${updatedDoc.id}`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    status: updatedDoc.status === 'ok' ? 'ok' :
-                        updatedDoc.status === 'expired' ? 'expired' : 'needs_review',
-                }),
-            });
-
-            if (response.ok) {
-                setDocs(prev => prev.map(d => d.id === updatedDoc.id ? updatedDoc : d));
-            }
-        } catch (error) {
-            console.error('Update error:', error);
-        }
-    }
-
-    // Filter Logic
-    const filteredDocs = docs.filter(d => {
-        const matchesSearch = d.title.toLowerCase().includes(search.toLowerCase()) ||
-            d.tags.some(t => t.toLowerCase().includes(search.toLowerCase()))
-
-        if (!matchesSearch) return false
-
-        if (currentTab === 'recent') {
-            const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
-            return new Date(d.uploadedAt).getTime() > weekAgo;
-        }
-        if (currentTab === 'attention') return d.status === 'needs_review' || d.status === 'expired'
-
-        return true
-    })
-
-    if (loading) {
-        return (
-            <DashboardPage
-                title="Mijn documenten"
-                description="Beheer je compliance en administratie op één plek."
-                className="animate-fade-in-up"
-            >
-                <div className="h-64 flex items-center justify-center text-slate-400">
-                    Documenten laden...
-                </div>
-            </DashboardPage>
-        );
-=======
     const handleUpload = () => {
         if (!isAdmin) {
             showError("Je hebt geen rechten (admin vereist).")
             return
         }
         router.push("/dashboard/documents/upload-center")
->>>>>>> b0318de (chore: sync updates)
     }
 
     // ─────────────────────────────────────────────────────────────
@@ -379,21 +322,6 @@ export default function DocumentsVaultPage() {
     // ─────────────────────────────────────────────────────────────
     return (
         <DashboardPage
-<<<<<<< HEAD
-            title="Mijn documenten"
-            description="Beheer je compliance en administratie op één plek."
-            className="animate-fade-in-up"
-        >
-            <DocumentsStats docs={docs as any} />
-
-            {/* Tabs & Toolbar */}
-            <div className="space-y-4">
-                <div className="flex gap-1 p-1 bg-slate-100/50 rounded-xl w-fit animate-fade-in-up delay-75">
-                    <TabButton id="all" label="Alles" count={docs.length} active={currentTab === "all"} onSelect={setCurrentTab} />
-                    <TabButton id="recent" label="Recent" active={currentTab === "recent"} onSelect={setCurrentTab} />
-                    <TabButton id="attention" label="Te Controleren" count={docs.filter(d => d.status === 'needs_review').length} active={currentTab === "attention"} onSelect={setCurrentTab} />
-                    <TabButton id="folders" label="Mappen" active={currentTab === "folders"} onSelect={setCurrentTab} />
-=======
             title="Mijn Documenten"
             description="Beheer je compliance en administratie op één plek."
             actions={
@@ -404,7 +332,6 @@ export default function DocumentsVaultPage() {
                             <span className="hidden sm:inline">Activiteit</span>
                         </Button>
                     </Link>
->>>>>>> b0318de (chore: sync updates)
                 </div>
             }
             className="animate-fade-in-up"
@@ -433,13 +360,6 @@ export default function DocumentsVaultPage() {
                     </div>
                 </aside>
 
-<<<<<<< HEAD
-            <DocumentDetailSheet doc={selectedDoc as any} isOpen={isDetailOpen} onClose={() => setIsDetailOpen(false)} onUpdate={handleUpdate as any} />
-            <UploadDialogWithFile isOpen={isUploadOpen} onClose={() => setIsUploadOpen(false)} onUpload={handleUpload} />
-        </DashboardPage>
-    )
-}
-=======
                 {/* Main Content */}
                 <div className="flex-1 min-w-0 space-y-4">
                     {/* Mobile Category Dropdown */}
@@ -451,7 +371,6 @@ export default function DocumentsVaultPage() {
                             totalCount={documents.length}
                         />
                     </div>
->>>>>>> b0318de (chore: sync updates)
 
                     {/* Toolbar */}
                     <VaultToolbar

@@ -5,6 +5,7 @@
  *
  * A polished bar chart with animated bars, consistent styling,
  * and accessible interactions.
+ * Premium Apple/OpenAI-level polish.
  */
 
 import * as React from "react"
@@ -38,6 +39,8 @@ type Props = {
   tone?: ChartTone
   /** Show loading skeleton */
   loading?: boolean
+  /** Show faint background track */
+  showTrack?: boolean
 }
 
 export function PremiumBarsChart({
@@ -50,6 +53,7 @@ export function PremiumBarsChart({
   className,
   tone = "emerald",
   loading = false,
+  showTrack = false,
 }: Props) {
   const reducedMotion = usePrefersReducedMotion()
   const [hoverIdx, setHoverIdx] = React.useState<number | null>(null)
@@ -82,8 +86,8 @@ export function PremiumBarsChart({
       role="img"
       aria-label={ariaLabel}
     >
-      {/* Bottom axis line */}
-      <div className="absolute inset-x-0 bottom-0 h-px bg-slate-200 dark:bg-slate-700" />
+      {/* Bottom axis line - premium subtle */}
+      <div className="absolute inset-x-0 bottom-0 h-px bg-slate-200/60 dark:bg-slate-700/60" />
 
       {/* Bars container */}
       <div className="flex items-end gap-1.5 sm:gap-2" style={{ height }} role="list">
@@ -96,7 +100,7 @@ export function PremiumBarsChart({
               key={`${d.label}-${i}`}
               className={cn(
                 "relative flex-1 h-full group outline-none rounded-md",
-                "focus-visible:ring-2 focus-visible:ring-offset-2",
+                "focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-slate-900",
                 tone === "emerald" && "focus-visible:ring-emerald-500/30",
                 tone === "blue" && "focus-visible:ring-blue-500/30",
                 tone === "amber" && "focus-visible:ring-amber-500/30",
@@ -111,13 +115,25 @@ export function PremiumBarsChart({
               role="listitem"
               aria-label={`${d.label}: ${formatValue(d.value)}${unit ? ` ${unit}` : ""}`}
             >
+              {/* Optional background track for depth */}
+              {showTrack && (
+                <div
+                  className={cn(
+                    "absolute inset-x-1 bottom-0 rounded-md",
+                    "bg-slate-100 dark:bg-slate-800/50"
+                  )}
+                  style={{ height: "100%" }}
+                />
+              )}
+
+              {/* Bar with premium styling */}
               <div
                 className={cn(
-                  "w-full rounded-lg ring-1 ring-white/10 shadow-sm",
+                  "w-full rounded-lg ring-1 ring-white/20 dark:ring-white/10 shadow-sm",
                   "transition-all duration-200 ease-out origin-bottom",
                   reducedMotion ? "" : "animate-bar-grow",
                   toneConfig.bgGradient,
-                  active ? "opacity-100 scale-[1.02]" : "opacity-75 group-hover:opacity-100"
+                  active ? "opacity-100 scale-[1.03] shadow-md" : "opacity-80 group-hover:opacity-100 group-hover:scale-[1.01]"
                 )}
                 style={{
                   height: `${heightPct}%`,
@@ -129,7 +145,7 @@ export function PremiumBarsChart({
         })}
       </div>
 
-      {/* Tooltip */}
+      {/* Tooltip - premium positioning */}
       {hoverIdx != null && data[hoverIdx] && (
         <div
           className="pointer-events-none absolute top-0 z-10"
@@ -148,8 +164,8 @@ export function PremiumBarsChart({
         </div>
       )}
 
-      {/* X-axis labels */}
-      <div className="mt-3 flex justify-between text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 font-medium px-0.5">
+      {/* X-axis labels - refined typography */}
+      <div className="mt-3 flex justify-between text-[10px] sm:text-[11px] text-slate-400 dark:text-slate-500 font-medium px-0.5">
         {data.map((d, i) => {
           if (i % labelEvery !== 0 && i !== data.length - 1) return null
           return (

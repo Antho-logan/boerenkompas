@@ -39,15 +39,7 @@ npm install
 cp .env.example .env.local
 ```
 
-<<<<<<< HEAD
-## Database Migrations
-
-Migrations `004_add_plan.sql` and `005_fix_plan_enum.sql` were previously applied manually in production. The repository migrations are now the source of truth for schema changes.
-
-## Learn More
-=======
 Edit `.env.local` with your credentials:
->>>>>>> b0318de (chore: sync updates)
 
 | Variable | Required | Where to Get |
 |----------|----------|--------------|
@@ -73,9 +65,6 @@ Expected output:
 
 ### 4. Run Database Migrations
 
-<<<<<<< HEAD
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-=======
 Go to **Supabase Dashboard → SQL Editor** and run these files in order:
 
 ```
@@ -218,4 +207,3 @@ npm run dev
 ## License
 
 Proprietary. All rights reserved.
->>>>>>> b0318de (chore: sync updates)

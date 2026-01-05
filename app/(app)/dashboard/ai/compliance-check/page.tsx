@@ -6,25 +6,17 @@ import { Button, buttonVariants } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
+import { Skeleton } from "@/components/ui/skeleton"
 import {
-<<<<<<< HEAD
-    CheckCircle2, AlertTriangle, FileWarning, Clock, ArrowRight, ShieldCheck,
-=======
     CheckCircle2, AlertTriangle, FileWarning, Clock, ShieldCheck,
->>>>>>> b0318de (chore: sync updates)
     Loader2, Lock, X, Search, Upload, Link2, FileText, Plus, Unlink, Info,
     AlertCircle, RefreshCw
 } from "lucide-react"
 import { useTenant } from "@/components/app/TenantProvider"
-<<<<<<< HEAD
-import type { RequirementWithStatus, DossierCheckSummary, DossierTemplate, Document } from "@/lib/supabase/types"
-import { hasFeature } from "@/lib/plans"
-=======
 import { Can } from "@/components/app/RBAC"
 import type { RequirementWithStatus, DossierCheckSummary, DossierTemplate, Document } from "@/lib/supabase/types"
 import { hasFeature } from "@/lib/plans"
 import { mapApiErrorToMessage, canWrite } from "@/lib/supabase/errors"
->>>>>>> b0318de (chore: sync updates)
 import {
     Tooltip,
     TooltipContent,
@@ -42,10 +34,7 @@ import {
     AlertDialogMedia,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-<<<<<<< HEAD
-=======
 import { SlideOver } from "@/components/calendar/calendar-overlays"
->>>>>>> b0318de (chore: sync updates)
 import Link from "next/link"
 import { cn } from "@/lib/utils"
 import DashboardPage from "@/components/app/DashboardPage"
@@ -69,18 +58,11 @@ function NotificationStack({
     if (notifications.length === 0) return null;
 
     return (
-<<<<<<< HEAD
-        <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2 max-w-sm">
-            {notifications.map((n) => (
-                <div
-                    key={n.id}
-=======
         <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2 max-w-sm" role="region" aria-label="Meldingen">
             {notifications.map((n) => (
                 <div
                     key={n.id}
                     role="alert"
->>>>>>> b0318de (chore: sync updates)
                     className={cn(
                         "px-4 py-3 rounded-lg shadow-lg flex items-center gap-3 animate-slide-in-right",
                         n.type === 'success' && "bg-emerald-50 border border-emerald-200 text-emerald-800",
@@ -88,27 +70,16 @@ function NotificationStack({
                         n.type === 'info' && "bg-blue-50 border border-blue-200 text-blue-800"
                     )}
                 >
-<<<<<<< HEAD
-                    {n.type === 'success' && <CheckCircle2 className="size-4 flex-shrink-0" />}
-                    {n.type === 'error' && <AlertCircle className="size-4 flex-shrink-0" />}
-                    {n.type === 'info' && <Info className="size-4 flex-shrink-0" />}
-=======
                     {n.type === 'success' && <CheckCircle2 className="size-4 flex-shrink-0" aria-hidden="true" />}
                     {n.type === 'error' && <AlertCircle className="size-4 flex-shrink-0" aria-hidden="true" />}
                     {n.type === 'info' && <Info className="size-4 flex-shrink-0" aria-hidden="true" />}
->>>>>>> b0318de (chore: sync updates)
                     <span className="text-sm flex-1">{n.message}</span>
                     <button 
                         onClick={() => onDismiss(n.id)} 
                         className="text-current opacity-60 hover:opacity-100"
-<<<<<<< HEAD
-                    >
-                        <X size={14} />
-=======
                         aria-label="Melding sluiten"
                     >
                         <X size={14} aria-hidden="true" />
->>>>>>> b0318de (chore: sync updates)
                     </button>
                 </div>
             ))}
@@ -116,69 +87,6 @@ function NotificationStack({
     );
 }
 
-<<<<<<< HEAD
-// --- SlideOver Dialog ---
-function SlideOver({
-    isOpen,
-    onClose,
-    children,
-    title,
-    description
-}: {
-    isOpen: boolean;
-    onClose: () => void;
-    children: React.ReactNode;
-    title: string;
-    description?: string;
-}) {
-    const [visible, setVisible] = useState(isOpen)
-
-    useEffect(() => {
-        let timeoutId: number | undefined
-        if (isOpen) {
-            timeoutId = window.setTimeout(() => setVisible(true), 0)
-        } else {
-            timeoutId = window.setTimeout(() => setVisible(false), 300)
-        }
-        return () => {
-            if (timeoutId !== undefined) window.clearTimeout(timeoutId)
-        }
-    }, [isOpen])
-
-    if (!visible && !isOpen) return null
-
-    return (
-        <div className="fixed inset-0 z-50 flex justify-end">
-            <div
-                className={cn(
-                    "absolute inset-0 bg-slate-900/20 backdrop-blur-sm transition-opacity duration-300",
-                    isOpen ? "opacity-100" : "opacity-0"
-                )}
-                onClick={onClose}
-            />
-            <div className={cn(
-                "relative w-full max-w-lg bg-white h-full shadow-2xl transform transition-transform duration-300 ease-out flex flex-col",
-                isOpen ? "translate-x-0" : "translate-x-full"
-            )}>
-                <div className="flex items-center justify-between p-6 border-b border-slate-100">
-                    <div>
-                        <h2 className="text-lg font-bold text-slate-900">{title}</h2>
-                        {description && <p className="text-sm text-slate-500 mt-1">{description}</p>}
-                    </div>
-                    <button onClick={onClose} className="p-2 -mr-2 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-100 transition-colors">
-                        <X size={20} />
-                    </button>
-                </div>
-                <div className="flex-1 overflow-y-auto">
-                    {children}
-                </div>
-            </div>
-        </div>
-    )
-}
-
-=======
->>>>>>> b0318de (chore: sync updates)
 // --- Link Existing Document Dialog ---
 function LinkDocumentDialog({
     isOpen,
@@ -230,47 +138,30 @@ function LinkDocumentDialog({
 
                 {/* Search */}
                 <div className="relative">
-<<<<<<< HEAD
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-slate-400" />
-=======
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-slate-400" aria-hidden="true" />
->>>>>>> b0318de (chore: sync updates)
                     <Input
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                         placeholder="Zoek op naam, categorie..."
                         className="pl-9 bg-slate-50 border-transparent focus:bg-white transition-all"
-<<<<<<< HEAD
-=======
                         aria-label="Zoek documenten"
->>>>>>> b0318de (chore: sync updates)
                     />
                 </div>
 
                 {/* Document List */}
-<<<<<<< HEAD
-                <div className="space-y-2">
-                    {filtered.length === 0 ? (
-                        <div className="text-center py-12 text-slate-400">
-                            <FileText className="mx-auto size-8 mb-2 opacity-50" />
-=======
                 <div className="space-y-2" role="listbox" aria-label="Beschikbare documenten">
                     {filtered.length === 0 ? (
                         <div className="text-center py-12 text-slate-400">
                             <FileText className="mx-auto size-8 mb-2 opacity-50" aria-hidden="true" />
->>>>>>> b0318de (chore: sync updates)
                             <p className="text-sm">Geen documenten gevonden</p>
                         </div>
                     ) : (
                         filtered.map(doc => (
                             <div
                                 key={doc.id}
-<<<<<<< HEAD
-=======
                                 role="option"
                                 aria-selected={doc.id === requirement?.linkedDocument?.id}
                                 tabIndex={0}
->>>>>>> b0318de (chore: sync updates)
                                 className={cn(
                                     "p-4 border rounded-xl cursor-pointer transition-all group",
                                     doc.id === requirement?.linkedDocument?.id
@@ -278,24 +169,17 @@ function LinkDocumentDialog({
                                         : "bg-slate-50 hover:bg-emerald-50 border-slate-100 hover:border-emerald-200"
                                 )}
                                 onClick={() => !linking && handleSelect(doc.id)}
-<<<<<<< HEAD
-=======
                                 onKeyDown={(e) => {
                                     if ((e.key === 'Enter' || e.key === ' ') && !linking) {
                                         e.preventDefault();
                                         handleSelect(doc.id);
                                     }
                                 }}
->>>>>>> b0318de (chore: sync updates)
                             >
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-3 min-w-0">
                                         <div className="size-10 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-slate-400 flex-shrink-0">
-<<<<<<< HEAD
-                                            <FileText size={18} />
-=======
                                             <FileText size={18} aria-hidden="true" />
->>>>>>> b0318de (chore: sync updates)
                                         </div>
                                         <div className="min-w-0">
                                             <div className="font-semibold text-slate-900 text-sm truncate group-hover:text-emerald-700">
@@ -306,11 +190,7 @@ function LinkDocumentDialog({
                                             </div>
                                             <div className="text-xs text-slate-500 truncate flex items-center gap-2">
                                                 <span>{doc.file_name}</span>
-<<<<<<< HEAD
-                                                <span className="w-1 h-1 rounded-full bg-slate-300" />
-=======
                                                 <span className="w-1 h-1 rounded-full bg-slate-300" aria-hidden="true" />
->>>>>>> b0318de (chore: sync updates)
                                                 <Badge variant="secondary" className="text-[10px] h-4">
                                                     {doc.category}
                                                 </Badge>
@@ -322,15 +202,10 @@ function LinkDocumentDialog({
                                         variant="ghost"
                                         className="text-emerald-600 hover:text-emerald-700 hover:bg-emerald-100 opacity-0 group-hover:opacity-100 transition-opacity"
                                         disabled={linking}
-<<<<<<< HEAD
-                                    >
-                                        {linking ? <Loader2 className="size-4 animate-spin" /> : <Link2 size={16} />}
-=======
                                         aria-label={`Koppel ${doc.title}`}
                                         tabIndex={-1}
                                     >
                                         {linking ? <Loader2 className="size-4 animate-spin" aria-hidden="true" /> : <Link2 size={16} aria-hidden="true" />}
->>>>>>> b0318de (chore: sync updates)
                                     </Button>
                                 </div>
                                 <div className="flex items-center gap-2 mt-2 text-[11px] text-slate-400">
@@ -349,11 +224,7 @@ function LinkDocumentDialog({
                                             doc.status === 'needs_review' ? 'Te controleren' :
                                                 doc.status === 'expired' ? 'Verlopen' : doc.status}
                                     </Badge>
-<<<<<<< HEAD
-                                    <span className="w-1 h-1 rounded-full bg-slate-300" />
-=======
                                     <span className="w-1 h-1 rounded-full bg-slate-300" aria-hidden="true" />
->>>>>>> b0318de (chore: sync updates)
                                     <span>{new Date(doc.created_at).toLocaleDateString('nl-NL')}</span>
                                 </div>
                             </div>
@@ -447,14 +318,9 @@ function UploadDocumentDialog({
 
                 {/* Title Input */}
                 <div className="space-y-2">
-<<<<<<< HEAD
-                    <label className="text-sm font-medium text-slate-700">Titel</label>
-                    <Input
-=======
                     <label htmlFor="upload-title" className="text-sm font-medium text-slate-700">Titel</label>
                     <Input
                         id="upload-title"
->>>>>>> b0318de (chore: sync updates)
                         value={title}
                         onChange={(e) => setTitle(e.target.value)}
                         placeholder="Bijv. Kringloopwijzer 2024"
@@ -469,8 +335,6 @@ function UploadDocumentDialog({
                     onDragOver={handleDrag}
                     onDrop={handleDrop}
                     onClick={() => fileInputRef.current?.click()}
-<<<<<<< HEAD
-=======
                     onKeyDown={(e) => {
                         if (e.key === 'Enter' || e.key === ' ') {
                             e.preventDefault();
@@ -480,7 +344,6 @@ function UploadDocumentDialog({
                     role="button"
                     tabIndex={0}
                     aria-label="Sleep bestand hierheen of klik om te selecteren"
->>>>>>> b0318de (chore: sync updates)
                     className={cn(
                         "border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all",
                         dragActive ? "border-emerald-400 bg-emerald-50" : "border-slate-200 hover:border-slate-300 hover:bg-slate-50",
@@ -493,19 +356,12 @@ function UploadDocumentDialog({
                         className="hidden"
                         onChange={handleFileSelect}
                         accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg"
-<<<<<<< HEAD
-=======
                         aria-label="Bestand selecteren"
->>>>>>> b0318de (chore: sync updates)
                     />
                     {selectedFile ? (
                         <div className="space-y-2">
                             <div className="size-12 mx-auto rounded-xl bg-emerald-100 flex items-center justify-center text-emerald-600">
-<<<<<<< HEAD
-                                <FileText size={24} />
-=======
                                 <FileText size={24} aria-hidden="true" />
->>>>>>> b0318de (chore: sync updates)
                             </div>
                             <p className="font-semibold text-slate-900 text-sm">{selectedFile.name}</p>
                             <p className="text-xs text-slate-500">
@@ -519,24 +375,15 @@ function UploadDocumentDialog({
                                     setSelectedFile(null)
                                 }}
                                 className="text-slate-500 hover:text-red-600"
-<<<<<<< HEAD
-                            >
-                                <X size={14} className="mr-1" /> Verwijder
-=======
                                 aria-label="Geselecteerd bestand verwijderen"
                             >
                                 <X size={14} className="mr-1" aria-hidden="true" /> Verwijder
->>>>>>> b0318de (chore: sync updates)
                             </Button>
                         </div>
                     ) : (
                         <>
                             <div className="size-12 mx-auto rounded-xl bg-slate-100 flex items-center justify-center text-slate-400 mb-3">
-<<<<<<< HEAD
-                                <Upload size={24} />
-=======
                                 <Upload size={24} aria-hidden="true" />
->>>>>>> b0318de (chore: sync updates)
                             </div>
                             <p className="text-sm font-medium text-slate-700">Sleep bestand hierheen</p>
                             <p className="text-xs text-slate-400 mt-1">of klik om te selecteren</p>
@@ -552,15 +399,9 @@ function UploadDocumentDialog({
                     className="w-full bg-emerald-600 hover:bg-emerald-700 text-white shadow-md"
                 >
                     {uploading ? (
-<<<<<<< HEAD
-                        <><Loader2 className="mr-2 size-4 animate-spin" /> Uploaden...</>
-                    ) : (
-                        <><Upload className="mr-2 size-4" /> Uploaden en koppelen</>
-=======
                         <><Loader2 className="mr-2 size-4 animate-spin" aria-hidden="true" /> Uploaden...</>
                     ) : (
                         <><Upload className="mr-2 size-4" aria-hidden="true" /> Uploaden en koppelen</>
->>>>>>> b0318de (chore: sync updates)
                     )}
                 </Button>
             </div>
@@ -648,18 +489,11 @@ function getStatusReason(req: RequirementWithStatus): { reason: string; detail?:
 
 // --- Main Page Component ---
 export default function DossierCheckPage() {
-<<<<<<< HEAD
-    const { tenant, effectivePlan } = useTenant();
-    const [templates, setTemplates] = useState<DossierTemplate[]>([]);
-    const [documents, setDocuments] = useState<Document[]>([]);
-
-=======
     const { tenant, effectivePlan, role } = useTenant();
     const [templates, setTemplates] = useState<DossierTemplate[]>([]);
     const [documents, setDocuments] = useState<Document[]>([]);
 
     const isAdmin = canWrite(role);
->>>>>>> b0318de (chore: sync updates)
     const canGenerate = hasFeature(effectivePlan, 'missing_items_generator')
 
     const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
@@ -778,16 +612,12 @@ export default function DossierCheckPage() {
 
     // Generate missing items
     const handleGenerateMissingItems = async () => {
-<<<<<<< HEAD
-        if (!selectedTemplateId || !canGenerate) return;
-=======
         if (!selectedTemplateId || !canGenerate || !isAdmin) {
             if (!isAdmin) {
                 addNotification('error', 'Je hebt geen rechten (admin vereist).');
             }
             return;
         }
->>>>>>> b0318de (chore: sync updates)
 
         setGenerating(true);
         setError(null);
@@ -803,21 +633,9 @@ export default function DossierCheckPage() {
                 setSummary(data.summary);
                 await fetchRequirements(true);
                 addNotification('success', data.message || 'Missende items gegenereerd');
-<<<<<<< HEAD
-            } else if (response.status === 403) {
-                const data = await response.json();
-                if (data.code === 'PLAN_UPGRADE_REQUIRED') {
-                    setError(`Upgrade naar ${data.requiredPlan || 'Pro'} vereist voor deze functie.`);
-                } else {
-                    setError('Je hebt geen toegang tot deze functie.');
-                }
-            } else {
-                setError('Er is iets misgegaan. Probeer het opnieuw.');
-=======
             } else {
                 const data = await response.json().catch(() => ({}));
                 setError(mapApiErrorToMessage(response.status, data));
->>>>>>> b0318de (chore: sync updates)
             }
         } catch (error) {
             console.error('Error generating missing items:', error);
@@ -829,13 +647,10 @@ export default function DossierCheckPage() {
 
     // Open link dialog
     const handleOpenLinkDialog = (req: RequirementWithStatus) => {
-<<<<<<< HEAD
-=======
         if (!isAdmin) {
             addNotification('error', 'Je hebt geen rechten (admin vereist).');
             return;
         }
->>>>>>> b0318de (chore: sync updates)
         setSelectedRequirement(req);
         setLinkDialogOpen(true);
         setError(null);
@@ -843,13 +658,10 @@ export default function DossierCheckPage() {
 
     // Open upload dialog
     const handleOpenUploadDialog = (req: RequirementWithStatus) => {
-<<<<<<< HEAD
-=======
         if (!isAdmin) {
             addNotification('error', 'Je hebt geen rechten (admin vereist).');
             return;
         }
->>>>>>> b0318de (chore: sync updates)
         setSelectedRequirement(req);
         setUploadDialogOpen(true);
         setError(null);
@@ -857,13 +669,10 @@ export default function DossierCheckPage() {
 
     // Open unlink confirmation dialog
     const handleOpenUnlinkDialog = (req: RequirementWithStatus) => {
-<<<<<<< HEAD
-=======
         if (!isAdmin) {
             addNotification('error', 'Je hebt geen rechten (admin vereist).');
             return;
         }
->>>>>>> b0318de (chore: sync updates)
         setSelectedRequirement(req);
         setUnlinkDialogOpen(true);
     };
@@ -895,14 +704,10 @@ export default function DossierCheckPage() {
 
     // Link document to requirement
     const handleLinkDocument = async (docId: string) => {
-<<<<<<< HEAD
-        if (!selectedRequirement) return;
-=======
         if (!selectedRequirement || !isAdmin) {
             addNotification('error', 'Je hebt geen rechten (admin vereist).');
             return;
         }
->>>>>>> b0318de (chore: sync updates)
 
         setLinking(true);
         const oldStatus = selectedRequirement.linkStatus;
@@ -926,13 +731,8 @@ export default function DossierCheckPage() {
             });
 
             if (!response.ok) {
-<<<<<<< HEAD
-                const data = await response.json();
-                throw new Error(data.error || 'Failed to link document');
-=======
                 const data = await response.json().catch(() => ({}));
                 throw new Error(mapApiErrorToMessage(response.status, data));
->>>>>>> b0318de (chore: sync updates)
             }
 
             setLinkDialogOpen(false);
@@ -953,14 +753,10 @@ export default function DossierCheckPage() {
 
     // Upload and link document
     const handleUploadAndLink = async (file: File, title: string) => {
-<<<<<<< HEAD
-        if (!selectedRequirement) return;
-=======
         if (!selectedRequirement || !isAdmin) {
             addNotification('error', 'Je hebt geen rechten (admin vereist).');
             return;
         }
->>>>>>> b0318de (chore: sync updates)
 
         setUploading(true);
         const oldStatus = selectedRequirement.linkStatus;
@@ -978,13 +774,8 @@ export default function DossierCheckPage() {
             });
 
             if (!uploadResponse.ok) {
-<<<<<<< HEAD
-                const data = await uploadResponse.json();
-                throw new Error(data.error || 'Failed to upload document');
-=======
                 const data = await uploadResponse.json().catch(() => ({}));
                 throw new Error(mapApiErrorToMessage(uploadResponse.status, data));
->>>>>>> b0318de (chore: sync updates)
             }
 
             const { document: uploadedDoc } = await uploadResponse.json();
@@ -1001,13 +792,8 @@ export default function DossierCheckPage() {
 
             if (!linkResponse.ok) {
                 // If link fails, the document is still uploaded (not orphaned in storage due to upload route handling)
-<<<<<<< HEAD
-                const data = await linkResponse.json();
-                throw new Error(data.error || 'Failed to link document');
-=======
                 const data = await linkResponse.json().catch(() => ({}));
                 throw new Error(mapApiErrorToMessage(linkResponse.status, data));
->>>>>>> b0318de (chore: sync updates)
             }
 
             // Optimistic update
@@ -1032,14 +818,10 @@ export default function DossierCheckPage() {
 
     // Unlink document from requirement
     const handleUnlinkDocument = async () => {
-<<<<<<< HEAD
-        if (!selectedRequirement) return;
-=======
         if (!selectedRequirement || !isAdmin) {
             addNotification('error', 'Je hebt geen rechten (admin vereist).');
             return;
         }
->>>>>>> b0318de (chore: sync updates)
 
         setUnlinking(true);
         const oldStatus = selectedRequirement.linkStatus;
@@ -1054,13 +836,8 @@ export default function DossierCheckPage() {
             });
 
             if (!response.ok) {
-<<<<<<< HEAD
-                const data = await response.json();
-                throw new Error(data.error || 'Failed to unlink document');
-=======
                 const data = await response.json().catch(() => ({}));
                 throw new Error(mapApiErrorToMessage(response.status, data));
->>>>>>> b0318de (chore: sync updates)
             }
 
             setUnlinkDialogOpen(false);
@@ -1110,14 +887,9 @@ export default function DossierCheckPage() {
                         onClick={handleRefresh}
                         disabled={refreshing}
                         className="text-slate-600"
-<<<<<<< HEAD
-                    >
-                        <RefreshCw className={cn("size-4 mr-1", refreshing && "animate-spin")} />
-=======
                         aria-label={refreshing ? 'Bezig met verversen' : 'Lijst verversen'}
                     >
                         <RefreshCw className={cn("size-4 mr-1", refreshing && "animate-spin")} aria-hidden="true" />
->>>>>>> b0318de (chore: sync updates)
                         {refreshing ? 'Verversen...' : 'Verversen'}
                     </Button>
 
@@ -1125,57 +897,13 @@ export default function DossierCheckPage() {
                         value={selectedTemplateId || ''}
                         onChange={(e) => setSelectedTemplateId(e.target.value)}
                         className="px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
-<<<<<<< HEAD
-=======
                         aria-label="Selecteer dossier template"
->>>>>>> b0318de (chore: sync updates)
                     >
                         {templates.map(t => (
                             <option key={t.id} value={t.id}>{t.name} (v{t.version})</option>
                         ))}
                     </select>
 
-<<<<<<< HEAD
-                    <TooltipProvider>
-                        <Tooltip>
-                            <TooltipTrigger
-                                disabled={!selectedTemplateId || generating || !canGenerate}
-                                onClick={handleGenerateMissingItems}
-                                className={cn(
-                                    buttonVariants({ variant: "default", size: "default" }),
-                                    "bg-emerald-600 hover:bg-emerald-700 text-white shadow-md relative group",
-                                    (!selectedTemplateId || generating || !canGenerate) && "opacity-50 pointer-events-none"
-                                )}
-                            >
-                                {generating ? (
-                                    <><Loader2 className="mr-2 size-4 animate-spin" /> Bezig...</>
-                                ) : (
-                                    <><ShieldCheck className="mr-2 size-4" /> Genereer missende items</>
-                                )}
-                                {!canGenerate && (
-                                    <div className="absolute -top-2 -right-2 bg-amber-500 text-[8px] text-white px-1.5 py-0.5 rounded-full font-bold uppercase tracking-wider border-2 border-white shadow-sm">
-                                        Pro
-                                    </div>
-                                )}
-                            </TooltipTrigger>
-                            {!canGenerate && (
-                                <TooltipContent side="bottom" className="max-w-xs p-4 bg-white border-slate-200 shadow-xl">
-                                    <div className="space-y-2 text-center">
-                                        <p className="text-xs font-bold text-slate-900">AI Generator is een Pro feature</p>
-                                        <p className="text-[10px] text-slate-500 leading-relaxed">
-                                            Bespaar tijd door AI automatisch ontbrekende dossier-items te laten identificeren en voorbereiden.
-                                        </p>
-                                        <Link href="/pricing">
-                                            <Button size="sm" variant="outline" className="w-full text-[10px] font-bold h-7">
-                                                Upgrade naar Pro
-                                            </Button>
-                                        </Link>
-                                    </div>
-                                </TooltipContent>
-                            )}
-                        </Tooltip>
-                    </TooltipProvider>
-=======
                     {/* Generate button - hidden for non-admins */}
                     <Can roles={['owner', 'advisor']}>
                         <TooltipProvider>
@@ -1219,7 +947,6 @@ export default function DossierCheckPage() {
                             </Tooltip>
                         </TooltipProvider>
                     </Can>
->>>>>>> b0318de (chore: sync updates)
                 </div>
             }
             className="animate-fade-in-up"
@@ -1227,17 +954,10 @@ export default function DossierCheckPage() {
 
             {/* Error Banner */}
             {error && (
-<<<<<<< HEAD
-                <div className="bg-red-50 border border-red-200 p-4 rounded-lg flex items-center justify-between">
-                    <span className="text-sm text-red-700">{error}</span>
-                    <button onClick={() => setError(null)} className="text-red-500 hover:text-red-700">
-                        <X size={16} />
-=======
                 <div className="bg-red-50 border border-red-200 p-4 rounded-lg flex items-center justify-between" role="alert">
                     <span className="text-sm text-red-700">{error}</span>
                     <button onClick={() => setError(null)} className="text-red-500 hover:text-red-700" aria-label="Foutmelding sluiten">
                         <X size={16} aria-hidden="true" />
->>>>>>> b0318de (chore: sync updates)
                     </button>
                 </div>
             )}
@@ -1282,11 +1002,7 @@ export default function DossierCheckPage() {
             {/* Plan Upgrade Required */}
             {planError && (
                 <Card className="p-8 text-center border-amber-200 bg-amber-50">
-<<<<<<< HEAD
-                    <Lock className="mx-auto size-12 text-amber-500 mb-4" />
-=======
                     <Lock className="mx-auto size-12 text-amber-500 mb-4" aria-hidden="true" />
->>>>>>> b0318de (chore: sync updates)
                     <h3 className="text-lg font-bold text-slate-900 mb-2">Upgrade Vereist</h3>
                     <p className="text-sm text-slate-600 mb-4 max-w-md mx-auto">
                         {planError.message}
@@ -1296,27 +1012,31 @@ export default function DossierCheckPage() {
                             Bekijk plannen
                         </Button>
                     </Link>
-<<<<<<< HEAD
                 </Card>
             )}
 
             {/* Loading State */}
             {!planError && loading ? (
-                <Card className="p-12 text-center text-slate-400">
-                    <Loader2 className="mx-auto size-8 animate-spin mb-4" />
-                    Vereisten laden...
-                </Card>
-=======
-                </Card>
-            )}
-
-            {/* Loading State */}
-            {!planError && loading ? (
-                <Card className="p-12 text-center text-slate-400">
-                    <Loader2 className="mx-auto size-8 animate-spin mb-4" aria-hidden="true" />
-                    <span aria-live="polite">Vereisten laden...</span>
-                </Card>
->>>>>>> b0318de (chore: sync updates)
+                <div className="space-y-4" role="status" aria-live="polite">
+                    <span className="sr-only">Vereisten laden...</span>
+                    {[1, 2].map((section) => (
+                        <Card key={section} className="border-slate-200 shadow-sm overflow-hidden">
+                            <div className="bg-slate-50 px-6 py-3 border-b border-slate-100">
+                                <Skeleton className="h-4 w-40" />
+                            </div>
+                            <div className="p-4 space-y-3">
+                                {[1, 2, 3].map((row) => (
+                                    <div key={row} className="grid grid-cols-12 gap-4 items-center">
+                                        <Skeleton className="h-4 w-12 col-span-2" />
+                                        <Skeleton className="h-4 w-full col-span-5" />
+                                        <Skeleton className="h-4 w-full col-span-3" />
+                                        {isAdmin && <Skeleton className="h-8 w-20 col-span-2" />}
+                                    </div>
+                                ))}
+                            </div>
+                        </Card>
+                    ))}
+                </div>
             ) : !planError && requirements.length === 0 ? (
                 <Card className="p-12 text-center text-slate-400">
                     Geen vereisten gevonden voor deze template.
@@ -1351,11 +1071,7 @@ export default function DossierCheckPage() {
                                                                     {statusBadge(req.linkStatus)}
                                                                 </div>
                                                             </TooltipTrigger>
-<<<<<<< HEAD
-                                                            <TooltipContent side="right" className="max-w-xs">
-=======
                                                             <TooltipContent className="max-w-xs">
->>>>>>> b0318de (chore: sync updates)
                                                                 <p className="font-medium">{statusInfo.reason}</p>
                                                                 {statusInfo.detail && (
                                                                     <p className="text-xs text-slate-500 mt-1">{statusInfo.detail}</p>
@@ -1396,44 +1112,6 @@ export default function DossierCheckPage() {
                                                         <span className="text-slate-400 italic">Geen document</span>
                                                     )}
                                                 </td>
-<<<<<<< HEAD
-                                                <td className="px-6 py-4">
-                                                    <div className="flex items-center gap-1">
-                                                        {/* Link/Replace button - always available */}
-                                                        <Button
-                                                            size="sm"
-                                                            variant="ghost"
-                                                            onClick={() => handleOpenLinkDialog(req)}
-                                                            className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-                                                        >
-                                                            <Link2 size={14} className="mr-1" />
-                                                            {req.linkedDocument ? 'Vervang' : 'Koppel'}
-                                                        </Button>
-
-                                                        {/* Upload button */}
-                                                        <Button
-                                                            size="sm"
-                                                            variant="ghost"
-                                                            onClick={() => handleOpenUploadDialog(req)}
-                                                            className="text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50"
-                                                        >
-                                                            <Plus size={14} className="mr-1" /> Upload
-                                                        </Button>
-
-                                                        {/* Unlink button - only if linked */}
-                                                        {req.linkedDocument && (
-                                                            <Button
-                                                                size="sm"
-                                                                variant="ghost"
-                                                                onClick={() => handleOpenUnlinkDialog(req)}
-                                                                className="text-red-500 hover:text-red-600 hover:bg-red-50"
-                                                            >
-                                                                <Unlink size={14} />
-                                                            </Button>
-                                                        )}
-                                                    </div>
-                                                </td>
-=======
                                                 {/* Action column - only for admins */}
                                                 {isAdmin && (
                                                     <td className="px-6 py-4">
@@ -1474,7 +1152,6 @@ export default function DossierCheckPage() {
                                                         </div>
                                                     </td>
                                                 )}
->>>>>>> b0318de (chore: sync updates)
                                             </tr>
                                         );
                                     })}
@@ -1509,11 +1186,7 @@ export default function DossierCheckPage() {
                 <AlertDialogContent>
                     <AlertDialogHeader>
                         <AlertDialogMedia className="bg-red-100 text-red-600">
-<<<<<<< HEAD
-                            <Unlink className="size-5" />
-=======
                             <Unlink className="size-5" aria-hidden="true" />
->>>>>>> b0318de (chore: sync updates)
                         </AlertDialogMedia>
                         <AlertDialogTitle>Document ontkoppelen?</AlertDialogTitle>
                         <AlertDialogDescription>
@@ -1531,11 +1204,7 @@ export default function DossierCheckPage() {
                             className="bg-red-600 hover:bg-red-700 text-white"
                         >
                             {unlinking ? (
-<<<<<<< HEAD
-                                <><Loader2 className="mr-2 size-4 animate-spin" /> Bezig...</>
-=======
                                 <><Loader2 className="mr-2 size-4 animate-spin" aria-hidden="true" /> Bezig...</>
->>>>>>> b0318de (chore: sync updates)
                             ) : (
                                 'Ontkoppelen'
                             )}
