@@ -120,7 +120,7 @@ export function PremiumBarsChart({
                 <div
                   className={cn(
                     "absolute inset-x-1 bottom-0 rounded-md",
-                    "bg-slate-100 dark:bg-slate-800/50"
+                    "bg-slate-100/70 dark:bg-slate-800/40"
                   )}
                   style={{ height: "100%" }}
                 />
@@ -129,15 +129,15 @@ export function PremiumBarsChart({
               {/* Bar with premium styling */}
               <div
                 className={cn(
-                  "w-full rounded-lg ring-1 ring-white/20 dark:ring-white/10 shadow-sm",
-                  "transition-all duration-200 ease-out origin-bottom",
+                  "w-full rounded-lg ring-1 ring-white/30 dark:ring-white/15",
+                  "transition-all duration-250 ease-out origin-bottom",
                   reducedMotion ? "" : "animate-bar-grow",
                   toneConfig.bgGradient,
-                  active ? "opacity-100 scale-[1.03] shadow-md" : "opacity-80 group-hover:opacity-100 group-hover:scale-[1.01]"
+                  active ? "opacity-100 scale-[1.04] shadow-lg ring-2 ring-white/40 dark:ring-white/20" : "opacity-85 group-hover:opacity-100 group-hover:scale-[1.02] shadow-sm"
                 )}
                 style={{
                   height: `${heightPct}%`,
-                  animationDelay: reducedMotion ? "0ms" : `${i * 50}ms`,
+                  animationDelay: reducedMotion ? "0ms" : `${i * 60}ms`,
                 }}
               />
             </div>
@@ -149,7 +149,7 @@ export function PremiumBarsChart({
       {hoverIdx != null && data[hoverIdx] && (
         <div
           className="pointer-events-none absolute top-0 z-10"
-          style={{ left: `${tooltipLeft}%`, transform: "translate(-50%, -130%)" }}
+          style={{ left: `${tooltipLeft}%`, transform: "translate(-50%, -135%)" }}
         >
           <ChartTooltip
             label={data[hoverIdx]!.label}
@@ -165,7 +165,7 @@ export function PremiumBarsChart({
       )}
 
       {/* X-axis labels - refined typography */}
-      <div className="mt-3 flex justify-between text-[10px] sm:text-[11px] text-slate-400 dark:text-slate-500 font-medium px-0.5">
+      <div className="mt-3.5 flex justify-between text-[10px] sm:text-[11px] text-slate-500/80 dark:text-slate-400/80 font-medium px-0.5 tracking-tight">
         {data.map((d, i) => {
           if (i % labelEvery !== 0 && i !== data.length - 1) return null
           return (

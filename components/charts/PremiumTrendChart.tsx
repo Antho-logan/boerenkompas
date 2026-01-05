@@ -237,8 +237,9 @@ export function PremiumTrendChart({
         >
           <defs>
             <linearGradient id={`bk-area-${gradientId}`} x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor={toneConfig.cssColor} stopOpacity="0.22" />
-              <stop offset="100%" stopColor={toneConfig.cssColor} stopOpacity="0.01" />
+              <stop offset="0%" stopColor={toneConfig.cssColor} stopOpacity="0.15" />
+              <stop offset="60%" stopColor={toneConfig.cssColor} stopOpacity="0.05" />
+              <stop offset="100%" stopColor={toneConfig.cssColor} stopOpacity="0.0" />
             </linearGradient>
           </defs>
 
@@ -253,8 +254,9 @@ export function PremiumTrendChart({
                 y1={y}
                 y2={y}
                 stroke={CHART_COLORS.grid}
-                strokeWidth={1}
-                className="dark:stroke-slate-800/50"
+                strokeWidth={0.75}
+                strokeDasharray="4 4"
+                className="opacity-40 dark:opacity-30"
               />
             )
           })}
@@ -270,7 +272,7 @@ export function PremiumTrendChart({
                 y={y + 3.5}
                 textAnchor="end"
                 fontSize={CHART_CONFIG.fontSize.tick}
-                className="fill-slate-400 dark:fill-slate-500 font-medium tabular-nums"
+                className="fill-slate-500/80 dark:fill-slate-400/80 font-medium tabular-nums tracking-tight"
               >
                 {formatValue(v)}
               </text>
@@ -288,7 +290,7 @@ export function PremiumTrendChart({
                 y={pad.t + innerH + 20}
                 textAnchor="middle"
                 fontSize={CHART_CONFIG.fontSize.tick}
-                className="fill-slate-400 dark:fill-slate-500 font-medium"
+                className="fill-slate-500/80 dark:fill-slate-400/80 font-medium tracking-tight"
               >
                 {d.label}
               </text>
@@ -311,9 +313,10 @@ export function PremiumTrendChart({
               d={targetPath}
               fill="none"
               stroke={CHART_COLORS.muted}
-              strokeWidth={1.5}
-              strokeDasharray="4 4"
-              strokeOpacity={0.4}
+              strokeWidth={1.25}
+              strokeDasharray="6 6"
+              strokeOpacity={0.35}
+              strokeLinecap="round"
             />
           )}
 
@@ -322,7 +325,7 @@ export function PremiumTrendChart({
             d={linePath}
             fill="none"
             stroke={toneConfig.cssColor}
-            strokeWidth={2.5}
+            strokeWidth={3}
             strokeLinecap="round"
             strokeLinejoin="round"
             style={{
@@ -378,23 +381,24 @@ export function PremiumTrendChart({
                 y1={pad.t}
                 y2={pad.t + innerH}
                 stroke={CHART_COLORS.grid}
-                strokeWidth={1}
-                className="opacity-60"
+                strokeWidth={0.75}
+                strokeDasharray="2 2"
+                className="opacity-50"
               />
               <circle
                 cx={hoverX}
                 cy={hoverY}
-                r={5.5}
+                r={6}
                 fill="white"
                 stroke={toneConfig.cssColor}
                 strokeWidth={2.5}
-                className="drop-shadow-sm"
+                className="drop-shadow-md"
               />
               {/* Inner dot for extra polish */}
               <circle
                 cx={hoverX}
                 cy={hoverY}
-                r={2.5}
+                r={3}
                 fill={toneConfig.cssColor}
               />
             </>

@@ -17,6 +17,18 @@ import { cn } from "@/lib/utils"
  * Using CSS variables that map to Tailwind colors for theme consistency
  * ────────────────────────────────────────────────────────────────────────────*/
 
+
+/* Add shimmer animation for premium loading states */
+/* This should be added to globals.css:
+@keyframes shimmer {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.7; }
+}
+.animate-shimmer {
+  animation: shimmer 2s ease-in-out infinite;
+}
+*/
+
 export const CHART_COLORS = {
   // Primary palette (matches Tailwind defaults, works in light/dark)
   primary: "oklch(0.696 0.17 162.48)",    // emerald-500
@@ -255,28 +267,28 @@ export function ChartTooltip({ label, items, className }: ChartTooltipProps) {
   return (
     <div
       className={cn(
-        "rounded-xl border border-slate-200/60 dark:border-slate-700/60",
-        "bg-white/95 dark:bg-slate-900/95 backdrop-blur-md",
-        "shadow-[0_8px_30px_-8px_rgba(0,0,0,0.12),0_2px_8px_-4px_rgba(0,0,0,0.08)]",
-        "px-3.5 py-3 text-[11px] min-w-[140px] max-w-[200px]",
+        "rounded-xl border border-slate-200/70 dark:border-slate-700/50",
+        "bg-white/98 dark:bg-slate-900/98 backdrop-blur-xl",
+        "shadow-[0_10px_40px_-8px_rgba(0,0,0,0.15),0_4px_12px_-4px_rgba(0,0,0,0.1)]",
+        "px-4 py-3.5 text-[11px] min-w-[150px] max-w-[220px]",
         "animate-in fade-in zoom-in-95 duration-150 ease-out",
         className
       )}
     >
-      <div className="font-semibold text-slate-900 dark:text-slate-100 mb-2.5 pb-2 border-b border-slate-100 dark:border-slate-800/50">
+      <div className="font-semibold text-slate-900 dark:text-slate-100 mb-2.5 pb-2.5 border-b border-slate-100/80 dark:border-slate-800/40">
         {label}
       </div>
-      <div className="space-y-1.5">
+      <div className="space-y-2">
         {items.map((item, i) => (
           <div key={i} className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-2 min-w-0">
+            <div className="flex items-center gap-2.5 min-w-0">
               {(item.color || item.colorClass) && (
                 <span
-                  className={cn("size-1.5 rounded-full shrink-0", item.colorClass)}
+                  className={cn("size-2 rounded-full shrink-0", item.colorClass)}
                   style={item.color ? { backgroundColor: item.color } : undefined}
                 />
               )}
-              <span className="text-slate-500 dark:text-slate-400 font-medium truncate">
+              <span className="text-slate-600 dark:text-slate-400 font-medium truncate">
                 {item.name}
               </span>
             </div>
@@ -312,22 +324,22 @@ export function ChartLegend({ items, className, position = "bottom" }: ChartLege
   return (
     <div
       className={cn(
-        "flex items-center justify-center gap-4 sm:gap-5 flex-wrap",
-        position === "top" ? "mb-3" : "mt-3",
+        "flex items-center justify-center gap-5 sm:gap-6 flex-wrap",
+        position === "top" ? "mb-4" : "mt-4",
         className
       )}
     >
       {items.map((item, i) => (
-        <div key={i} className="flex items-center gap-2 text-[11px] text-slate-600 dark:text-slate-400">
+        <div key={i} className="flex items-center gap-2.5 text-[11px] text-slate-600 dark:text-slate-400">
           <span
             className={cn(
-              "w-3 h-[3px] rounded-full shrink-0",
+              "w-3.5 h-[3px] rounded-full shrink-0",
               item.dashed && "border border-dashed border-current bg-transparent",
               item.colorClass
             )}
             style={item.color && !item.dashed ? { backgroundColor: item.color } : undefined}
           />
-          <span className="font-medium">{item.label}</span>
+          <span className="font-medium tracking-tight">{item.label}</span>
         </div>
       ))}
     </div>
@@ -379,8 +391,10 @@ export function ChartSkeleton({ height = 200, className }: ChartSkeletonProps) {
   return (
     <div
       className={cn(
-        "w-full rounded-xl animate-pulse",
-        "bg-gradient-to-br from-slate-100 to-slate-50 dark:from-slate-800/50 dark:to-slate-800/30",
+        "w-full rounded-xl",
+        "bg-gradient-to-br from-slate-100/80 via-slate-50/60 to-slate-100/80",
+        "dark:from-slate-800/40 dark:via-slate-800/30 dark:to-slate-800/40",
+        "animate-shimmer",
         className
       )}
       style={{ height }}
